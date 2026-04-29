@@ -7,6 +7,7 @@ import { SYSTEM_INSTRUCTION } from '../lib/systemInstruction'
 import { filterRelevantFiles, validateFileSize, MAX_FILE_SIZE_CHARS } from '../lib/utils/fileOptimization'
 import { saveSessionImmediately } from '../lib/utils/sessionSave'
 import { devLog } from '../lib/utils/logger'
+import { handleError } from '../lib/errorHandler'
 
 interface MessageHandlerCallbacks {
   onChatUpdate?: (text: string) => void
@@ -130,9 +131,10 @@ export function useMessageHandler() {
           onError: (error) => {
             console.error('분석 오류:', error)
             updateAnalysisStatus(currentSession.id, 'failed')
+            const userMessage = handleError(error).userMessage
             addMessage({
               role: 'assistant',
-              content: `분석 중 오류가 발생했습니다: ${error.message}`,
+              content: `분석 중 오류가 발생했습니다: ${userMessage}`,
             })
             setIsLoading(false)
             callbacks.onError?.(error)
@@ -258,9 +260,10 @@ export function useMessageHandler() {
           },
           onError: (error) => {
             console.error('Gemini API Error:', error)
+            const userMessage = handleError(error).userMessage
             addMessage({
               role: 'assistant',
-              content: `오류가 발생했습니다: ${error.message}`,
+              content: `오류가 발생했습니다: ${userMessage}`,
             })
             setIsLoading(false)
             callbacks.onError?.(error)

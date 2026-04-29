@@ -1,8 +1,28 @@
 // Gemini API 서비스 인터페이스 및 구현
 
 import { GeminiContent, GeminiStreamChunk } from '../../types/gemini'
+import { ApiError } from '../../types/errors'
 import { GEMINI_API_BASE_URL, GEMINI_MODELS, GEMINI_GENERATION_CONFIG } from '../constants/api'
 import { devLog } from '../utils/logger'
+
+const MAX_STREAM_ATTEMPTS = 5
+const RETRYABLE_STATUS = new Set([429, 503])
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+function getRetryDelayMs(response: Response, attemptIndex: number): number {
+  const retryAfter = response.headers.get('Retry-After')
+  if (retryAfter) {
+    const seconds = parseInt(retryAfter, 10)
+    if (!Number.isNaN(seconds) && seconds > 0) {
+      return Math.min(seconds * 1000, 120_000)
+    }
+  }
+  const base = 2000 * 2 ** attemptIndex
+  return Math.min(base, 60_000)
+}
 
 export interface IGeminiService {
   streamGenerateContent(
@@ -35,21 +55,44 @@ export class GeminiService implements IGeminiService {
     const model = options?.tools ? GEMINI_MODELS.FLASH_EXP : GEMINI_MODELS.FLASH
     const url = `${GEMINI_API_BASE_URL}/models/${model}:streamGenerateContent?alt=sse&key=${cleanApiKey}`
 
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        contents,
-        tools: options?.tools,
-        generationConfig: GEMINI_GENERATION_CONFIG,
-      }),
+    const body = JSON.stringify({
+      contents,
+      tools: options?.tools,
+      generationConfig: GEMINI_GENERATION_CONFIG,
     })
 
-    if (!response.ok) {
+    let response!: Response
+    for (let attempt = 0; attempt < MAX_STREAM_ATTEMPTS; attempt++) {
+      response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body,
+      })
+
+      if (response.ok) {
+        break
+      }
+
       const errorText = await response.text()
-      throw new Error(`API 오류 (${response.status}): ${errorText}`)
+      const canRetry =
+        attempt < MAX_STREAM_ATTEMPTS - 1 && RETRYABLE_STATUS.has(response.status)
+
+      if (canRetry) {
+        const delayMs = getRetryDelayMs(response, attempt)
+        devLog.warn(
+          `Gemini API ${response.status} (할당량·일시 과부하). ${delayMs}ms 후 재시도 (${attempt + 1}/${MAX_STREAM_ATTEMPTS})…`
+        )
+        await sleep(delayMs)
+        continue
+      }
+
+      throw new ApiError(
+        `Gemini API HTTP ${response.status}`,
+        response.status,
+        errorText
+      )
     }
 
     if (!response.body) {
