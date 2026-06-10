@@ -158,7 +158,7 @@ function App() {
         />
         <div id="main-container" className="flex-1 flex overflow-hidden">
           {/* 좌측 사이드바 (채팅 목록) */}
-          <Sidebar />
+          <Sidebar onStartAnalysis={handleSendMessageWrapper} />
 
           {/* 메인 컨텐츠 영역 (수집 탭이면 CollectionPanel, 그 외엔 기존 3컬럼) */}
           <div className="flex-1 flex overflow-hidden">

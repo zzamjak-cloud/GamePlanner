@@ -96,8 +96,14 @@ export function useMessageHandler() {
     // 디버그 로그 제거
     // console.log('📋 사용 중인 분석 템플릿:', template?.name || '기본 분석 템플릿')
 
-    // 사용자 메시지 추가
-    addMessage({ role: 'user', content: message })
+    // 세션 생성 시 이미 추가된 사용자 메시지와 중복되지 않도록 처리
+    const lastMessage = currentState.messages[currentState.messages.length - 1]
+    const isDuplicateUserMessage =
+      lastMessage?.role === 'user' && lastMessage.content === message
+
+    if (!isDuplicateUserMessage) {
+      addMessage({ role: 'user', content: message })
+    }
     setIsLoading(true)
 
     // 분석 상태 업데이트

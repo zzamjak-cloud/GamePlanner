@@ -10,7 +10,11 @@ import { TemplateType } from '../types/promptTemplate'
 import { devLog } from '../lib/utils/logger'
 import { useCollection } from '../hooks/useCollection'
 
-export function Sidebar() {
+interface SidebarProps {
+  onStartAnalysis?: (gameName: string) => void
+}
+
+export function Sidebar({ onStartAnalysis }: SidebarProps) {
   const {
     sessions,
     currentSessionId,
@@ -194,6 +198,7 @@ export function Sidebar() {
     const sessionId = createAnalysisSession(gameName, templateId)
     loadSession(sessionId)
     setShowAnalysisStart(false)
+    onStartAnalysis?.(gameName)
   }
 
   // 수집 훅

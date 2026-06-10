@@ -62,11 +62,17 @@ export function useGameAnalysis() {
         }
       }
 
-      // 3. 현재 사용자 메시지 추가
-      contents.push({
-        role: 'user',
-        parts: [{ text: message }]
-      })
+      // 3. 현재 사용자 메시지 추가 (히스토리 마지막과 동일하면 스킵)
+      const lastHistory = chatHistory?.[chatHistory.length - 1]
+      const messageAlreadyInHistory =
+        lastHistory?.role === 'user' && lastHistory.content === message
+
+      if (!messageAlreadyInHistory) {
+        contents.push({
+          role: 'user',
+          parts: [{ text: message }]
+        })
+      }
 
       // 디버그 로그 제거
       // console.log('📝 전달되는 컨텍스트:', {
