@@ -4,8 +4,9 @@ export const GEMINI_API_BASE_URL = 'https://generativelanguage.googleapis.com/v1
 
 export const GEMINI_MODELS = {
   FLASH: 'gemini-2.5-flash',
-  FLASH_EXP: 'gemini-2.0-flash', // gemini-2.0-flash-exp → gemini-2.0-flash (Google Search Grounding 지원)
-  PRO: 'gemini-2.0-pro',
+  // gemini-2.0-flash는 2026-06-01 종료. Google Search Grounding은 2.5 Flash에서 지원
+  FLASH_WITH_SEARCH: 'gemini-2.5-flash',
+  PRO: 'gemini-2.5-pro',
 } as const
 
 export const GEMINI_GENERATION_CONFIG = {

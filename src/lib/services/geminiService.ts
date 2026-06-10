@@ -52,7 +52,7 @@ export class GeminiService implements IGeminiService {
       throw new Error('API Key가 비어있습니다')
     }
 
-    const model = options?.tools ? GEMINI_MODELS.FLASH_EXP : GEMINI_MODELS.FLASH
+    const model = options?.tools ? GEMINI_MODELS.FLASH_WITH_SEARCH : GEMINI_MODELS.FLASH
     const url = `${GEMINI_API_BASE_URL}/models/${model}:streamGenerateContent?alt=sse&key=${cleanApiKey}`
 
     const body = JSON.stringify({

@@ -6,6 +6,7 @@ import { mkdir, writeFile, exists } from '@tauri-apps/plugin-fs'
 import { downloadDir, join } from '@tauri-apps/api/path'
 import { sanitizeGameName } from '../utils/collection'
 import { devLog } from '../utils/logger'
+import { GEMINI_MODELS } from '../constants/api'
 
 // 검색 키워드 세트 (다양한 이미지 소스 확보용, 순환 사용)
 const SEARCH_QUERIES = [
@@ -341,7 +342,7 @@ async function findGooglePlayImages(apiKey: string, gameName: string): Promise<s
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const model = genAI.getGenerativeModel({
-      model: 'gemini-2.0-flash',
+      model: GEMINI_MODELS.FLASH_WITH_SEARCH,
       tools: [{ google_search: {} } as any],
     })
 
