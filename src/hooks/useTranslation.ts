@@ -21,8 +21,8 @@ export function useTranslation() {
       ? 'You are a professional translator. Translate the following AI prompt from English to Korean. Maintain the original structure, formatting, and technical terms. Output only the translated text without any additional explanations.'
       : 'You are a professional translator. Translate the following AI prompt from Korean to English. Maintain the original structure, formatting, and technical terms. Output only the translated text without any additional explanations.'
 
-    // Gemini 2.5 Flash API 호출 (더 높은 할당량)
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`
+    // Gemini 3.6 Flash API 호출 (더 높은 할당량)
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`
 
     const response = await fetch(url, {
       method: 'POST',
