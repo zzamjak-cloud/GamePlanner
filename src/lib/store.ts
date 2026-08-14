@@ -99,6 +99,9 @@ export async function getSettings(): Promise<Settings> {
   // 수집 세션
   const collectionSessions = await store.get<CollectionSession[]>('collection_sessions')
 
+  // 채팅 모델
+  const chatModel = await store.get<string>('chat_model')
+
   const rawSettings: Settings = {
     geminiApiKey,
     notionApiKey,
@@ -111,6 +114,7 @@ export async function getSettings(): Promise<Settings> {
     currentAnalysisTemplateId,
     windowState,
     collectionSessions,
+    chatModel,
   }
 
   // 설정 마이그레이션 적용
@@ -134,6 +138,9 @@ export async function saveSettings(settings: SaveSettingsParams): Promise<void> 
   }
   if (settings.notionAnalysisDatabaseId !== undefined) {
     await store.set('notion_analysis_database_id', settings.notionAnalysisDatabaseId)
+  }
+  if (settings.chatModel !== undefined) {
+    await store.set('chat_model', settings.chatModel)
   }
 
   await saveStore()
@@ -169,6 +176,9 @@ export async function saveSessions(sessions: ChatSession[]): Promise<void> {
   }
   if (currentSettings.notionAnalysisDatabaseId) {
     await store.set('notion_analysis_database_id', currentSettings.notionAnalysisDatabaseId)
+  }
+  if (currentSettings.chatModel) {
+    await store.set('chat_model', currentSettings.chatModel)
   }
 
   await saveStore()

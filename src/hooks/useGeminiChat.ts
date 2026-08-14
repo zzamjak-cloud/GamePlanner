@@ -1,5 +1,5 @@
 import { SYSTEM_INSTRUCTION } from '../lib/systemInstruction'
-import { Message } from '../store/useAppStore'
+import { Message, useAppStore } from '../store/useAppStore'
 import { GeminiContent } from '../types/gemini'
 import { geminiService } from '../lib/services/geminiService'
 import { CHAT_HISTORY_LIMIT } from '../lib/constants/api'
@@ -82,8 +82,9 @@ export function useGeminiChat() {
       const progressTracker = new StreamingProgressTracker(systemPrompt || SYSTEM_INSTRUCTION)
       devLog.log('📊 [기획] 진행 상황 추적 시작 - 헤더 개수:', progressTracker.getTotalCount())
 
-      // Gemini 서비스를 통한 스트리밍 호출
+      // Gemini 서비스를 통한 스트리밍 호출 (사용자 선택 모델 적용)
       await geminiService.streamGenerateContent(cleanApiKey, contents, {
+        model: useAppStore.getState().chatModel,
         onChunk: (chunk) => {
           // finishReason 확인 (MAX_TOKENS 체크)
           if (chunk.candidates && chunk.candidates[0]?.finishReason === 'MAX_TOKENS') {

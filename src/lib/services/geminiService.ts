@@ -2,7 +2,7 @@
 
 import { GeminiContent, GeminiStreamChunk } from '../../types/gemini'
 import { ApiError } from '../../types/errors'
-import { GEMINI_API_BASE_URL, GEMINI_MODELS, GEMINI_GENERATION_CONFIG } from '../constants/api'
+import { GEMINI_API_BASE_URL, GEMINI_MODELS, GEMINI_GENERATION_CONFIG, normalizeChatModel } from '../constants/api'
 import { devLog } from '../utils/logger'
 
 const MAX_STREAM_ATTEMPTS = 5
@@ -29,6 +29,7 @@ export interface IGeminiService {
     apiKey: string,
     contents: GeminiContent[],
     options?: {
+      model?: string
       tools?: Array<{ google_search?: Record<string, never> }>
       onChunk?: (chunk: GeminiStreamChunk) => void
     }
@@ -43,6 +44,7 @@ export class GeminiService implements IGeminiService {
     apiKey: string,
     contents: GeminiContent[],
     options?: {
+      model?: string
       tools?: Array<{ google_search?: Record<string, never> }>
       onChunk?: (chunk: GeminiStreamChunk) => void
     }
@@ -52,7 +54,8 @@ export class GeminiService implements IGeminiService {
       throw new Error('API Key가 비어있습니다')
     }
 
-    const model = options?.tools ? GEMINI_MODELS.FLASH_WITH_SEARCH : GEMINI_MODELS.FLASH
+    // 사용자 선택 모델 우선. 미지정 시 검색 도구 여부에 따라 기본 모델 결정
+    const model = normalizeChatModel(options?.model || (options?.tools ? GEMINI_MODELS.FLASH_WITH_SEARCH : GEMINI_MODELS.FLASH))
     const url = `${GEMINI_API_BASE_URL}/models/${model}:streamGenerateContent?alt=sse&key=${cleanApiKey}`
 
     const body = JSON.stringify({
@@ -154,4 +157,3 @@ export class GeminiService implements IGeminiService {
 
 // 싱글톤 인스턴스
 export const geminiService = new GeminiService()
-

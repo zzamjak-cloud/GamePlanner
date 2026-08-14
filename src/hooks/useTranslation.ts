@@ -3,6 +3,8 @@
  * 한국어 ↔ 영어 양방향 번역 지원
  */
 
+import { GEMINI_API_BASE_URL, GEMINI_MODELS } from '../lib/constants/api'
+
 export function useTranslation() {
   /**
    * 프롬프트를 번역합니다
@@ -21,8 +23,8 @@ export function useTranslation() {
       ? 'You are a professional translator. Translate the following AI prompt from English to Korean. Maintain the original structure, formatting, and technical terms. Output only the translated text without any additional explanations.'
       : 'You are a professional translator. Translate the following AI prompt from Korean to English. Maintain the original structure, formatting, and technical terms. Output only the translated text without any additional explanations.'
 
-    // Gemini 3.6 Flash API 호출 (더 높은 할당량)
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`
+    // 최신 Flash 모델로 번역 요청
+    const url = `${GEMINI_API_BASE_URL}/models/${GEMINI_MODELS.FLASH}:generateContent?key=${apiKey}`
 
     const response = await fetch(url, {
       method: 'POST',

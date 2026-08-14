@@ -5,6 +5,7 @@ import { Settings } from '../../types/store'
 import { migrateV1 } from './v1'
 import { migrateV2 } from './v2'
 import { migrateV3 } from './v3'
+import { normalizeChatModel } from '../constants/api'
 import { devLog } from '../utils/logger'
 
 export interface MigrationResult {
@@ -58,15 +59,36 @@ export function migrateSessions(sessions: unknown[]): ChatSession[] {
  * 설정 마이그레이션
  */
 export function migrateSettings(settings: Settings): Settings {
+  let migrated = settings
+
   // Planning DB ID 마이그레이션 (기존 notion_database_id → notion_planning_database_id)
-  if (!settings.notionPlanningDatabaseId && settings.oldNotionDbId) {
-    return {
-      ...settings,
-      notionPlanningDatabaseId: settings.oldNotionDbId,
+  if (!migrated.notionPlanningDatabaseId && migrated.oldNotionDbId) {
+    migrated = {
+      ...migrated,
+      notionPlanningDatabaseId: migrated.oldNotionDbId,
     }
   }
 
-  return settings
+  // 저장된 모델 ID를 현재 지원 목록으로 정규화
+  if (migrated.chatModel) {
+    const normalizedChatModel = normalizeChatModel(migrated.chatModel)
+
+    if (normalizedChatModel !== migrated.chatModel) {
+      migrated = {
+        ...migrated,
+        chatModel: normalizedChatModel,
+      }
+    }
+  }
+
+  if (!migrated.chatModel) {
+    migrated = {
+      ...migrated,
+      chatModel: normalizeChatModel(migrated.chatModel),
+    }
+  }
+
+  return migrated
 }
 
 /**
@@ -87,4 +109,3 @@ export function migrateData(data: {
     settings: settings as Settings,
   }
 }
-

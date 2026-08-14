@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { X, LogOut } from 'lucide-react'
 import { useAppStore } from '../store/useAppStore'
 import { saveSettings } from '../lib/store'
+import { SELECTABLE_MODELS, DEFAULT_CHAT_MODEL } from '../lib/constants/api'
 import { devLog } from '../lib/utils/logger'
 import { useAuth } from '../hooks/useAuth'
 
@@ -15,6 +16,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const [notionApiKeyInput, setNotionApiKeyInput] = useState('')
   const [notionPlanningDatabaseIdInput, setNotionPlanningDatabaseIdInput] = useState('')
   const [notionAnalysisDatabaseIdInput, setNotionAnalysisDatabaseIdInput] = useState('')
+  const [chatModelInput, setChatModelInput] = useState<string>(DEFAULT_CHAT_MODEL)
   const [isSaving, setIsSaving] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const {
@@ -22,10 +24,12 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     notionApiKey,
     notionPlanningDatabaseId,
     notionAnalysisDatabaseId,
+    chatModel,
     setApiKey,
     setNotionApiKey,
     setNotionPlanningDatabaseId,
     setNotionAnalysisDatabaseId,
+    setChatModel,
   } = useAppStore()
   const { user, logout } = useAuth()
 
@@ -51,8 +55,9 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       if (notionApiKey) setNotionApiKeyInput(notionApiKey)
       if (notionPlanningDatabaseId) setNotionPlanningDatabaseIdInput(notionPlanningDatabaseId)
       if (notionAnalysisDatabaseId) setNotionAnalysisDatabaseIdInput(notionAnalysisDatabaseId)
+      if (chatModel) setChatModelInput(chatModel)
     }
-  }, [isOpen, apiKey, notionApiKey, notionPlanningDatabaseId, notionAnalysisDatabaseId])
+  }, [isOpen, apiKey, notionApiKey, notionPlanningDatabaseId, notionAnalysisDatabaseId, chatModel])
 
   const handleSave = async () => {
     if (!apiKeyInput.trim()) {
@@ -68,6 +73,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         notionApiKey: notionApiKeyInput.trim() || undefined,
         notionPlanningDatabaseId: notionPlanningDatabaseIdInput.trim() || undefined,
         notionAnalysisDatabaseId: notionAnalysisDatabaseIdInput.trim() || undefined,
+        chatModel: chatModelInput,
       })
 
       // Zustand 스토어 업데이트
@@ -81,6 +87,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       if (notionAnalysisDatabaseIdInput.trim()) {
         setNotionAnalysisDatabaseId(notionAnalysisDatabaseIdInput.trim())
       }
+      setChatModel(chatModelInput)
 
       devLog.log('✅ 설정 저장 완료')
       alert('설정이 저장되었습니다')
@@ -97,7 +104,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-background rounded-lg shadow-lg w-full max-w-md p-6">
+      <div className="bg-background rounded-lg shadow-lg w-full max-w-md max-h-[calc(100vh-2rem)] overflow-y-auto p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold">설정</h2>
           <button
@@ -131,6 +138,27 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 Google AI Studio
               </a>
               에서 무료 발급
+            </p>
+          </div>
+
+          {/* AI 모델 선택 */}
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              AI 모델
+            </label>
+            <select
+              value={chatModelInput}
+              onChange={(e) => setChatModelInput(e.target.value)}
+              className="w-full px-3 py-2 rounded-md border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+              {SELECTABLE_MODELS.map((m) => (
+                <option key={m.value} value={m.value}>
+                  {m.label}
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-muted-foreground mt-1">
+              {SELECTABLE_MODELS.find((m) => m.value === chatModelInput)?.description}
             </p>
           </div>
 

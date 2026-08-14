@@ -24,6 +24,7 @@ export interface Settings {
   currentAnalysisTemplateId?: string | null
   windowState?: WindowState
   collectionSessions?: CollectionSession[]
+  chatModel?: string | null
 }
 
 export interface SaveSettingsParams {
@@ -31,5 +32,6 @@ export interface SaveSettingsParams {
   notionApiKey?: string
   notionPlanningDatabaseId?: string
   notionAnalysisDatabaseId?: string
+  chatModel?: string
 }
 

@@ -1,5 +1,5 @@
 import { createAnalysisSystemPrompt } from '../lib/analysisInstruction'
-import { Message } from '../store/useAppStore'
+import { Message, useAppStore } from '../store/useAppStore'
 import { GeminiContent } from '../types/gemini'
 import { CHAT_HISTORY_LIMIT } from '../lib/constants/api'
 import { geminiService } from '../lib/services/geminiService'
@@ -89,8 +89,9 @@ export function useGameAnalysis() {
       const progressTracker = new StreamingProgressTracker(systemPrompt || '기본 분석 템플릿을 사용합니다.')
       devLog.log('📊 [분석] 진행 상황 추적 시작 - 헤더 개수:', progressTracker.getTotalCount())
 
-      // Gemini 서비스를 통한 스트리밍 호출 (Google Search 포함)
+      // Gemini 서비스를 통한 스트리밍 호출 (Google Search 포함, 사용자 선택 모델 적용)
       await geminiService.streamGenerateContent(cleanApiKey, contents, {
+        model: useAppStore.getState().chatModel,
         tools: [
           {
             google_search: {}
