@@ -156,7 +156,7 @@ export function LoginScreen({
 
         {/* 저작권 */}
         <p className="text-center text-xs text-white/50 mt-6">
-          © 2025 Loadcomplete. All rights reserved.
+          © 2025 Loadcomplete. Licensed under GPL-3.0-only.
         </p>
       </div>
     </div>

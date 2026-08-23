@@ -1,6 +1,6 @@
 # GamePlanner
 
-AI 기반 모바일 게임 기획서 작성 및 게임 분석 데스크톱 애플리케이션 (v0.2.3)
+AI 기반 모바일 게임 기획서 작성 및 게임 분석 데스크톱 애플리케이션 (v0.2.6)
 
 Google Gemini AI와의 대화를 통해 개발자가 즉시 착수할 수 있는 수준의 게임 기획서를 생성하고, 기존 게임에 대한 심층 분석 보고서를 자동으로 작성합니다.
 
@@ -121,3 +121,13 @@ npm run tauri build
 ## 추천 IDE 설정
 
 - [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+
+---
+
+## 라이선스
+
+Copyright (C) 2025 Loadcomplete.
+
+이 프로젝트는 GNU General Public License v3.0 only 조건으로 배포됩니다. 자세한 내용은 [LICENSE](./LICENSE)를 확인하세요.
+
+소스 코드 또는 파생물을 배포하는 경우 GPL-3.0-only 조건을 따라야 하며, 저작권 및 라이선스 고지를 제거하거나 별도 권리자인 것처럼 표시할 수 없습니다. GPL 조건을 준수하지 않는 폐쇄형/독점 재배포 및 판매는 허용되지 않습니다.

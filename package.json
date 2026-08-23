@@ -1,7 +1,9 @@
 {
   "name": "gameplanner-tauri",
   "private": true,
-  "version": "0.2.5",
+  "version": "0.2.6",
+  "license": "GPL-3.0-only",
+  "author": "Loadcomplete",
   "type": "module",
   "scripts": {
     "dev": "vite",
