@@ -1,12 +1,11 @@
-// 게임 이미지 수집 서비스 - Gemini API와 Tauri 플러그인 연동
+// 게임 이미지 수집 서비스 - OpenRouter API와 Tauri 플러그인 연동
 
-import { GoogleGenerativeAI } from '@google/generative-ai'
 import { fetch } from '@tauri-apps/plugin-http'
 import { mkdir, writeFile, exists } from '@tauri-apps/plugin-fs'
 import { downloadDir, join } from '@tauri-apps/api/path'
 import { sanitizeGameName } from '../utils/collection'
 import { devLog } from '../utils/logger'
-import { GEMINI_MODELS } from '../constants/api'
+import { openRouterService } from './openRouterService'
 
 // 검색 키워드 세트 (다양한 이미지 소스 확보용, 순환 사용)
 const SEARCH_QUERIES = [
@@ -20,7 +19,7 @@ const SEARCH_QUERIES = [
 /**
  * 게임 이미지 URL 검색 (DuckDuckGo + Steam + Google Play 병행)
  *
- * @param apiKey Gemini API 키
+ * @param apiKey OpenRouter API 키
  * @param gameName 검색할 게임명
  * @param excludeUrls 제외할 URL 목록 (추가 탐색 시 기존 URL 배제)
  * @param queryOffset 검색 키워드 오프셋 (추가 탐색 시 다른 키워드 사용)
@@ -334,26 +333,24 @@ async function getSteamScreenshots(appId: number): Promise<string[]> {
 }
 
 /**
- * Gemini로 Google Play 패키지명을 찾고, 스토어 페이지에서 이미지 URL 추출
+ * AI 웹 검색으로 Google Play 패키지명을 찾고, 스토어 페이지에서 이미지 URL 추출
  */
 async function findGooglePlayImages(apiKey: string, gameName: string): Promise<string[]> {
   try {
-    const genAI = new GoogleGenerativeAI(apiKey)
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const model = genAI.getGenerativeModel({
-      model: GEMINI_MODELS.FLASH_WITH_SEARCH,
-      tools: [{ google_search: {} } as any],
-    })
-
     const prompt = `What is the Google Play Store package name (application ID) for the game "${gameName}"?
 Reply with ONLY the package name. Nothing else.
 Example: com.example.gamename`
 
-    const result = await model.generateContent(prompt)
-    const responseText = result.response.text().trim()
+    // 웹 검색(:online) 활성화를 위해 tools 옵션 전달
+    const responseText = (
+      await openRouterService.streamGenerateContent(
+        apiKey,
+        [{ role: 'user', parts: [{ text: prompt }] }],
+        { tools: [{ google_search: {} }] }
+      )
+    ).trim()
 
-    devLog.log(`📝 Gemini Google Play 패키지명 응답: ${responseText}`)
+    devLog.log(`📝 AI Google Play 패키지명 응답: ${responseText}`)
 
     // 패키지명 추출 (com.xxx.xxx 형태)
     const packageMatch = responseText.match(/\b([a-zA-Z][a-zA-Z0-9_]*(?:\.[a-zA-Z][a-zA-Z0-9_]*){2,})\b/)

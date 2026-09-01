@@ -89,7 +89,7 @@ export function CollectionPanel() {
         return (
           <div className="flex items-center gap-2 text-primary text-sm">
             <Loader2 className="w-4 h-4 animate-spin" />
-            <span>Gemini AI로 이미지 URL 검색 중...</span>
+            <span>AI로 이미지 URL 검색 중...</span>
           </div>
         )
       case 'downloading':

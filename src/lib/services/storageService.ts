@@ -22,7 +22,7 @@ export class TauriStorageService implements IStorageService {
   async getSettings(): Promise<Settings> {
     const store = await getStore()
 
-    const geminiApiKey = await store.get<string>('gemini_api_key')
+    const openRouterApiKey = await store.get<string>('openrouter_api_key')
     const notionApiKey = await store.get<string>('notion_api_key')
     const notionPlanningDatabaseId = await store.get<string>('notion_planning_database_id')
     const notionAnalysisDatabaseId = await store.get<string>('notion_analysis_database_id')
@@ -33,7 +33,7 @@ export class TauriStorageService implements IStorageService {
     const currentAnalysisTemplateId = await store.get<string>('current_analysis_template_id')
 
     return {
-      geminiApiKey,
+      openRouterApiKey,
       notionApiKey,
       notionPlanningDatabaseId,
       notionAnalysisDatabaseId,
@@ -48,8 +48,8 @@ export class TauriStorageService implements IStorageService {
   async saveSettings(settings: Partial<Settings>): Promise<void> {
     const store = await getStore()
 
-    if (settings.geminiApiKey !== undefined) {
-      await store.set('gemini_api_key', settings.geminiApiKey)
+    if (settings.openRouterApiKey !== undefined) {
+      await store.set('openrouter_api_key', settings.openRouterApiKey)
     }
     if (settings.notionApiKey !== undefined) {
       await store.set('notion_api_key', settings.notionApiKey)
@@ -71,8 +71,8 @@ export class TauriStorageService implements IStorageService {
     await store.set('chat_sessions', sessions)
 
     // 기존 API 키 설정 보존
-    if (currentSettings.geminiApiKey) {
-      await store.set('gemini_api_key', currentSettings.geminiApiKey)
+    if (currentSettings.openRouterApiKey) {
+      await store.set('openrouter_api_key', currentSettings.openRouterApiKey)
     }
     if (currentSettings.notionApiKey) {
       await store.set('notion_api_key', currentSettings.notionApiKey)
@@ -88,9 +88,9 @@ export class TauriStorageService implements IStorageService {
 
     // 저장 후 검증
     const verifySettings = await this.getSettings()
-    if (!verifySettings.geminiApiKey && currentSettings.geminiApiKey) {
+    if (!verifySettings.openRouterApiKey && currentSettings.openRouterApiKey) {
       console.error('⚠️ 경고: API 키가 손실됨! 복구 시도 중...')
-      await store.set('gemini_api_key', currentSettings.geminiApiKey)
+      await store.set('openrouter_api_key', currentSettings.openRouterApiKey)
       await saveStore()
     }
   }

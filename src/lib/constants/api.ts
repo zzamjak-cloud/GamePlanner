@@ -1,44 +1,47 @@
-// API 관련 상수
+// API 관련 상수 (OpenRouter 통합 키 기반)
 
-export const GEMINI_API_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta'
+export const OPENROUTER_API_BASE_URL = 'https://openrouter.ai/api/v1'
 
-export const GEMINI_MODELS = {
-  FLASH: 'gemini-3.7-flash',
-  // Google Search Grounding 지원 모델
-  FLASH_WITH_SEARCH: 'gemini-3.7-flash',
-  PRO: 'gemini-3.1-pro-preview',
+// OpenRouter 모델 슬러그 (provider/model 형식)
+export const OPENROUTER_MODELS = {
+  FLASH: 'google/gemini-3.7-flash',
+  PRO: 'google/gemini-3.1-pro-preview',
 } as const
 
-export type GeminiModel = (typeof GEMINI_MODELS)[keyof typeof GEMINI_MODELS]
+export type ChatModel = (typeof OPENROUTER_MODELS)[keyof typeof OPENROUTER_MODELS]
 
-export const DEFAULT_CHAT_MODEL: GeminiModel = GEMINI_MODELS.FLASH
+export const DEFAULT_CHAT_MODEL: ChatModel = OPENROUTER_MODELS.FLASH
 
 // 설정 화면에서 사용자가 선택 가능한 모델 목록
-export const SELECTABLE_MODELS: Array<{ value: GeminiModel; label: string; description: string }> = [
-  { value: GEMINI_MODELS.FLASH, label: 'Gemini 3.7 Flash', description: '최신 Stable Flash, 복잡한 기획 작업에 권장' },
-  { value: GEMINI_MODELS.PRO, label: 'Gemini 3.1 Pro', description: '심층 추론·장문 분석용 (느리고 비쌈)' },
+export const SELECTABLE_MODELS: Array<{ value: ChatModel; label: string; description: string }> = [
+  { value: OPENROUTER_MODELS.FLASH, label: 'Gemini 3.7 Flash', description: '최신 Stable Flash, 복잡한 기획 작업에 권장' },
+  { value: OPENROUTER_MODELS.PRO, label: 'Gemini 3.1 Pro', description: '심층 추론·장문 분석용 (느리고 비쌈)' },
 ]
 
-const LEGACY_CHAT_MODEL_MIGRATIONS: Record<string, GeminiModel> = {
-  'gemini-3.6-flash': GEMINI_MODELS.FLASH,
-  'gemini-3.1-pro': GEMINI_MODELS.PRO,
-  'gemini-2.5-pro': GEMINI_MODELS.PRO,
+// Gemini API 직접 호출 시절 저장된 모델명 → OpenRouter 슬러그 마이그레이션
+const LEGACY_CHAT_MODEL_MIGRATIONS: Record<string, ChatModel> = {
+  'gemini-3.7-flash': OPENROUTER_MODELS.FLASH,
+  'gemini-3.6-flash': OPENROUTER_MODELS.FLASH,
+  'gemini-3.1-pro-preview': OPENROUTER_MODELS.PRO,
+  'gemini-3.1-pro': OPENROUTER_MODELS.PRO,
+  'gemini-2.5-pro': OPENROUTER_MODELS.PRO,
 }
 
 const SELECTABLE_MODEL_VALUES = new Set<string>(SELECTABLE_MODELS.map((model) => model.value))
 
-export function normalizeChatModel(model: string | null | undefined): GeminiModel {
+export function normalizeChatModel(model: string | null | undefined): ChatModel {
   if (!model) return DEFAULT_CHAT_MODEL
   if (LEGACY_CHAT_MODEL_MIGRATIONS[model]) return LEGACY_CHAT_MODEL_MIGRATIONS[model]
-  if (SELECTABLE_MODEL_VALUES.has(model)) return model as GeminiModel
+  if (SELECTABLE_MODEL_VALUES.has(model)) return model as ChatModel
   return DEFAULT_CHAT_MODEL
 }
 
-export const GEMINI_GENERATION_CONFIG = {
+// OpenAI 호환 생성 파라미터 (OpenRouter가 지원 가능한 provider로 전달)
+export const GENERATION_CONFIG = {
   temperature: 0.7,
-  topK: 40,
-  topP: 0.95,
-  maxOutputTokens: 65536, // Gemini 3.7 Flash/3.1 Pro Preview 최대 출력 토큰
+  top_k: 40,
+  top_p: 0.95,
+  max_tokens: 65536, // Gemini 3.7 Flash/3.1 Pro Preview 최대 출력 토큰
 } as const
 
 export const CHAT_HISTORY_LIMIT = 8 // 최근 대화 히스토리 개수 (비용 최적화를 위해 10 → 8로 축소)

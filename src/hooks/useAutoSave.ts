@@ -33,7 +33,7 @@ export function useAutoSave(options: UseAutoSaveOptions = {}) {
           // 디버그: 저장 후 API 키 확인 (오류 발생 시에만 로그 출력)
           const { getSettings } = await import('../lib/store')
           const settings = await getSettings()
-          if (!settings.geminiApiKey) {
+          if (!settings.openRouterApiKey) {
             console.error('⚠️ 경고: 세션 저장 후 API 키가 사라짐!')
           }
           // else {

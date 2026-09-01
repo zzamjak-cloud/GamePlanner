@@ -61,7 +61,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
   const handleSave = async () => {
     if (!apiKeyInput.trim()) {
-      alert('Gemini API Key를 입력해주세요')
+      alert('OpenRouter API Key를 입력해주세요')
       return
     }
 
@@ -69,7 +69,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     try {
       // 전역 Store를 통해 설정 저장
       await saveSettings({
-        geminiApiKey: apiKeyInput.trim(),
+        openRouterApiKey: apiKeyInput.trim(),
         notionApiKey: notionApiKeyInput.trim() || undefined,
         notionPlanningDatabaseId: notionPlanningDatabaseIdInput.trim() || undefined,
         notionAnalysisDatabaseId: notionAnalysisDatabaseIdInput.trim() || undefined,
@@ -116,28 +116,28 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         </div>
 
         <div className="space-y-4">
-          {/* Gemini API Key */}
+          {/* OpenRouter API Key */}
           <div>
             <label className="block text-sm font-medium mb-2">
-              Google Gemini API Key <span className="text-destructive">*</span>
+              OpenRouter API Key <span className="text-destructive">*</span>
             </label>
             <input
               type="password"
               value={apiKeyInput}
               onChange={(e) => setApiKeyInput(e.target.value)}
-              placeholder="AIza..."
+              placeholder="sk-or-v1-..."
               className="w-full px-3 py-2 rounded-md border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring"
             />
             <p className="text-xs text-muted-foreground mt-1">
               <a
-                href="https://aistudio.google.com/app/apikey"
+                href="https://openrouter.ai/settings/keys"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-primary hover:underline"
               >
-                Google AI Studio
+                OpenRouter
               </a>
-              에서 무료 발급
+              에서 발급한 통합 키 (회사 지급 키 사용)
             </p>
           </div>
 

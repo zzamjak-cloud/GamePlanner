@@ -29,14 +29,14 @@ export function useAppInitialization(options: UseAppInitializationOptions = {}) 
         const settings = await getSettings()
 
         devLog.log('API 키 상태:', {
-          gemini: settings.geminiApiKey ? '존재' : '없음',
+          openRouter: settings.openRouterApiKey ? '존재' : '없음',
           notion: settings.notionApiKey ? '존재' : '없음',
           planningDb: settings.notionPlanningDatabaseId ? '존재' : '없음',
           analysisDb: settings.notionAnalysisDatabaseId ? '존재' : '없음'
         })
 
-        if (settings.geminiApiKey) {
-          setApiKey(settings.geminiApiKey)
+        if (settings.openRouterApiKey) {
+          setApiKey(settings.openRouterApiKey)
         } else {
           // API Key가 없으면 설정 모달 표시
           options.onSettingsRequired?.()

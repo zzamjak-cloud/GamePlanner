@@ -265,7 +265,7 @@ export function useMessageHandler() {
             callbacks.onComplete?.(finalChatText)
           },
           onError: (error) => {
-            console.error('Gemini API Error:', error)
+            console.error('OpenRouter API Error:', error)
             const userMessage = handleError(error).userMessage
             addMessage({
               role: 'assistant',

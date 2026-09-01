@@ -75,7 +75,7 @@ export function GameTitleModal({ isOpen, onClose, onStart }: GameTitleModalProps
         </div>
 
         <p className="text-muted-foreground text-sm mb-4">
-          수집할 게임의 제목을 입력하세요. Gemini AI가 공식 이미지를 자동으로 검색하여 다운로드합니다.
+          수집할 게임의 제목을 입력하세요. AI가 공식 이미지를 자동으로 검색하여 다운로드합니다.
         </p>
 
         {/* 게임 제목 입력 */}

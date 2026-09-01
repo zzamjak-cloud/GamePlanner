@@ -1,14 +1,14 @@
 /**
- * Gemini API를 사용한 프롬프트 번역 훅
+ * OpenRouter API를 사용한 프롬프트 번역 훅
  * 한국어 ↔ 영어 양방향 번역 지원
  */
 
-import { GEMINI_API_BASE_URL, GEMINI_MODELS } from '../lib/constants/api'
+import { OPENROUTER_API_BASE_URL, OPENROUTER_MODELS } from '../lib/constants/api'
 
 export function useTranslation() {
   /**
    * 프롬프트를 번역합니다
-   * @param apiKey Gemini API 키
+   * @param apiKey OpenRouter API 키
    * @param text 번역할 텍스트
    * @param targetLang 목표 언어 ('ko' 또는 'en')
    * @returns 번역된 텍스트
@@ -23,49 +23,37 @@ export function useTranslation() {
       ? 'You are a professional translator. Translate the following AI prompt from English to Korean. Maintain the original structure, formatting, and technical terms. Output only the translated text without any additional explanations.'
       : 'You are a professional translator. Translate the following AI prompt from Korean to English. Maintain the original structure, formatting, and technical terms. Output only the translated text without any additional explanations.'
 
-    // 최신 Flash 모델로 번역 요청
-    const url = `${GEMINI_API_BASE_URL}/models/${GEMINI_MODELS.FLASH}:generateContent?key=${apiKey}`
-
-    const response = await fetch(url, {
+    // 최신 Flash 모델로 번역 요청 (비스트리밍)
+    const response = await fetch(`${OPENROUTER_API_BASE_URL}/chat/completions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        contents: [
-          {
-            role: 'user',
-            parts: [{ text: systemPrompt }]
-          },
-          {
-            role: 'model',
-            parts: [{ text: 'I understand. I will translate the AI prompt accurately while preserving its structure and technical terms.' }]
-          },
-          {
-            role: 'user',
-            parts: [{ text }]
-          }
+        model: OPENROUTER_MODELS.FLASH,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: text },
         ],
-        generationConfig: {
-          temperature: 0.3,
-          maxOutputTokens: 8192,
-        }
+        temperature: 0.3,
+        max_tokens: 8192,
       })
     })
 
     if (!response.ok) {
-      const error = await response.json()
-      throw new Error(error.error?.message || '번역 요청 실패')
+      const error = await response.json().catch(() => null)
+      throw new Error(error?.error?.message || '번역 요청 실패')
     }
 
     const data = await response.json()
 
     // 응답 파싱
-    if (!data.candidates || data.candidates.length === 0) {
+    const translatedText = data.choices?.[0]?.message?.content
+    if (!translatedText) {
       throw new Error('번역 결과를 받지 못했습니다.')
     }
 
-    const translatedText = data.candidates[0].content.parts[0].text
     return translatedText
   }
 

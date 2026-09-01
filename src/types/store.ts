@@ -13,7 +13,7 @@ export interface WindowState {
 }
 
 export interface Settings {
-  geminiApiKey?: string | null
+  openRouterApiKey?: string | null
   notionApiKey?: string | null
   notionPlanningDatabaseId?: string | null
   notionAnalysisDatabaseId?: string | null
@@ -28,7 +28,7 @@ export interface Settings {
 }
 
 export interface SaveSettingsParams {
-  geminiApiKey?: string
+  openRouterApiKey?: string
   notionApiKey?: string
   notionPlanningDatabaseId?: string
   notionAnalysisDatabaseId?: string

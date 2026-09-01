@@ -14,7 +14,7 @@ export function validateApiKey(apiKey: string): {
     }
   }
 
-  // Gemini API 키는 보통 길이가 39자
+  // OpenRouter API 키는 sk-or-v1- 접두사를 포함해 20자 이상
   if (apiKey.length < 20) {
     return {
       valid: false,

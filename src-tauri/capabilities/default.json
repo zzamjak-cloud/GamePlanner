@@ -39,7 +39,7 @@
           "url": "https://api.notion.com/*"
         },
         {
-          "url": "https://generativelanguage.googleapis.com/*"
+          "url": "https://openrouter.ai/*"
         },
         {
           "url": "https://docs.google.com/*"

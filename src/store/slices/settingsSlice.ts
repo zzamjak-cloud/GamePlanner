@@ -1,7 +1,7 @@
 // 설정 관리 슬라이스
 
 import { StateCreator } from 'zustand'
-import { DEFAULT_CHAT_MODEL, normalizeChatModel, type GeminiModel } from '../../lib/constants/api'
+import { DEFAULT_CHAT_MODEL, normalizeChatModel, type ChatModel } from '../../lib/constants/api'
 
 export interface SettingsSlice {
   // 앱 설정 상태
@@ -9,7 +9,7 @@ export interface SettingsSlice {
   notionApiKey: string | null
   notionPlanningDatabaseId: string | null
   notionAnalysisDatabaseId: string | null
-  chatModel: GeminiModel
+  chatModel: ChatModel
   isLoading: boolean
 
   // 설정 관리 메서드
@@ -47,7 +47,7 @@ export const createSettingsSlice: StateCreator<
   // Notion Database ID 설정 (분석 DB)
   setNotionAnalysisDatabaseId: (id) => set({ notionAnalysisDatabaseId: id }),
 
-  // 채팅에 사용할 Gemini 모델 설정
+  // 채팅에 사용할 AI 모델 설정
   setChatModel: (model) => set({ chatModel: normalizeChatModel(model) }),
 
   // 로딩 상태

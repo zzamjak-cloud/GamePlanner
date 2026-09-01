@@ -20,6 +20,6 @@ export interface CollectionSession {
   status: 'idle' | 'searching' | 'downloading' | 'completed' | 'failed'
   createdAt: number
   updatedAt: number
-  totalFound?: number            // Gemini가 찾은 전체 이미지 수
+  totalFound?: number            // AI 검색으로 찾은 전체 이미지 수
   error?: string
 }

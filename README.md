@@ -1,15 +1,15 @@
 # GamePlanner
 
-AI 기반 모바일 게임 기획서 작성 및 게임 분석 데스크톱 애플리케이션 (v0.2.6)
+AI 기반 모바일 게임 기획서 작성 및 게임 분석 데스크톱 애플리케이션 (v0.2.7)
 
-Google Gemini AI와의 대화를 통해 개발자가 즉시 착수할 수 있는 수준의 게임 기획서를 생성하고, 기존 게임에 대한 심층 분석 보고서를 자동으로 작성합니다.
+OpenRouter를 통한 Gemini AI와의 대화를 통해 개발자가 즉시 착수할 수 있는 수준의 게임 기획서를 생성하고, 기존 게임에 대한 심층 분석 보고서를 자동으로 작성합니다.
 
 ---
 
 ## 핵심 기능
 
 ### 1. AI 게임 기획서 작성 (Planning)
-- Gemini AI와 대화하며 **하이퍼 캐주얼 / 하이브리드 캐주얼** 장르의 게임 기획서를 단계적으로 작성
+- AI와 대화하며 **하이퍼 캐주얼 / 하이브리드 캐주얼** 장르의 게임 기획서를 단계적으로 작성
 - 실시간 마크다운 프리뷰로 기획서 내용 즉시 확인
 - 커스텀 프롬프트 템플릿 지원으로 기획서 양식 자유 편집
 
@@ -48,7 +48,7 @@ Google Gemini AI와의 대화를 통해 개발자가 즉시 착수할 수 있는
 | **빌드 도구** | Vite |
 | **스타일링** | TailwindCSS |
 | **상태 관리** | Zustand (슬라이스 패턴) |
-| **AI** | Google Gemini API (Flash 모델, 스트리밍) |
+| **AI** | OpenRouter API (Gemini Flash 모델, 스트리밍) |
 | **마크다운** | react-markdown, remark-gfm, rehype-raw |
 | **리치 텍스트 에디터** | TipTap |
 | **외부 연동** | Notion API |
@@ -79,7 +79,7 @@ src/
 │   ├── useAppStore.ts     # 메인 스토어 (슬라이스 통합)
 │   └── slices/            # session, template, settings, ui, checklist, collection
 ├── lib/              # 핵심 로직
-│   ├── services/          # Gemini API, 스토리지, 수집, 인증 서비스
+│   ├── services/          # OpenRouter API, 스토리지, 수집, 인증 서비스
 │   ├── constants/         # API, UI 상수
 │   ├── utils/             # 유틸리티 함수
 │   └── migrations/        # 데이터 마이그레이션
@@ -113,7 +113,7 @@ npm run tauri build
 ```
 
 ### 필수 설정
-- **Gemini API Key**: 설정 모달에서 Google Gemini API 키 입력
+- **OpenRouter API Key**: 설정 모달에서 OpenRouter 통합 API 키 입력
 - **Notion 연동** (선택): Notion API 키 및 데이터베이스 ID 설정
 
 ---

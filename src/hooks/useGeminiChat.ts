@@ -1,7 +1,7 @@
 import { SYSTEM_INSTRUCTION } from '../lib/systemInstruction'
 import { Message, useAppStore } from '../store/useAppStore'
 import { GeminiContent } from '../types/gemini'
-import { geminiService } from '../lib/services/geminiService'
+import { openRouterService } from '../lib/services/openRouterService'
 import { CHAT_HISTORY_LIMIT } from '../lib/constants/api'
 import { StreamingProgressTracker } from '../lib/utils/streamingProgress'
 import { devLog } from '../lib/utils/logger'
@@ -82,8 +82,8 @@ export function useGeminiChat() {
       const progressTracker = new StreamingProgressTracker(systemPrompt || SYSTEM_INSTRUCTION)
       devLog.log('📊 [기획] 진행 상황 추적 시작 - 헤더 개수:', progressTracker.getTotalCount())
 
-      // Gemini 서비스를 통한 스트리밍 호출 (사용자 선택 모델 적용)
-      await geminiService.streamGenerateContent(cleanApiKey, contents, {
+      // OpenRouter 서비스를 통한 스트리밍 호출 (사용자 선택 모델 적용)
+      await openRouterService.streamGenerateContent(cleanApiKey, contents, {
         model: useAppStore.getState().chatModel,
         onChunk: (chunk) => {
           // finishReason 확인 (MAX_TOKENS 체크)
@@ -198,7 +198,7 @@ export function useGeminiChat() {
 
       callbacks.onComplete(chatText)
     } catch (error) {
-      console.error('Gemini API Error:', error)
+      console.error('OpenRouter API Error:', error)
       callbacks.onError(
         error instanceof Error ? error : new Error('알 수 없는 오류가 발생했습니다')
       )

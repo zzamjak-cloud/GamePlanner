@@ -71,7 +71,7 @@ export async function saveStore(): Promise<void> {
 export async function getSettings(): Promise<Settings> {
   const store = await getStore()
 
-  const geminiApiKey = await store.get<string>('gemini_api_key')
+  const openRouterApiKey = await store.get<string>('openrouter_api_key')
   const notionApiKey = await store.get<string>('notion_api_key')
   const notionPlanningDatabaseId = await store.get<string>('notion_planning_database_id')
   const notionAnalysisDatabaseId = await store.get<string>('notion_analysis_database_id')
@@ -79,7 +79,7 @@ export async function getSettings(): Promise<Settings> {
 
   // 로그 제거: 너무 빈번하게 호출됨
   // console.log('📖 [getSettings] 설정 불러오기')
-  // console.log('  - geminiApiKey:', geminiApiKey ? '존재함' : '없음')
+  // console.log('  - openRouterApiKey:', openRouterApiKey ? '존재함' : '없음')
   // console.log('  - chatSessions:', chatSessions?.length || 0, '개')
   // if (chatSessions && chatSessions.length > 0) {
   //   console.log('  - 세션 목록:', chatSessions.map(s => `${s.title} (${s.type})`).join(', '))
@@ -103,7 +103,7 @@ export async function getSettings(): Promise<Settings> {
   const chatModel = await store.get<string>('chat_model')
 
   const rawSettings: Settings = {
-    geminiApiKey,
+    openRouterApiKey,
     notionApiKey,
     notionPlanningDatabaseId,
     notionAnalysisDatabaseId,
@@ -127,8 +127,8 @@ export async function getSettings(): Promise<Settings> {
 export async function saveSettings(settings: SaveSettingsParams): Promise<void> {
   const store = await getStore()
 
-  if (settings.geminiApiKey !== undefined) {
-    await store.set('gemini_api_key', settings.geminiApiKey)
+  if (settings.openRouterApiKey !== undefined) {
+    await store.set('openrouter_api_key', settings.openRouterApiKey)
   }
   if (settings.notionApiKey !== undefined) {
     await store.set('notion_api_key', settings.notionApiKey)
@@ -165,8 +165,8 @@ export async function saveSessions(sessions: ChatSession[]): Promise<void> {
   // console.log('  - chat_sessions 키에 저장 완료')
 
   // 기존 API 키 설정들이 있으면 다시 설정 (보존)
-  if (currentSettings.geminiApiKey) {
-    await store.set('gemini_api_key', currentSettings.geminiApiKey)
+  if (currentSettings.openRouterApiKey) {
+    await store.set('openrouter_api_key', currentSettings.openRouterApiKey)
   }
   if (currentSettings.notionApiKey) {
     await store.set('notion_api_key', currentSettings.notionApiKey)
@@ -198,9 +198,9 @@ export async function saveSessions(sessions: ChatSession[]): Promise<void> {
   // }
 
   const verifySettings = await getSettings()
-  if (!verifySettings.geminiApiKey && currentSettings.geminiApiKey) {
+  if (!verifySettings.openRouterApiKey && currentSettings.openRouterApiKey) {
     console.error('⚠️ 경고: API 키가 손실됨! 복구 시도 중...')
-    await store.set('gemini_api_key', currentSettings.geminiApiKey)
+    await store.set('openrouter_api_key', currentSettings.openRouterApiKey)
     await saveStore()
   }
 }

@@ -40,7 +40,7 @@ export function useCollection() {
       // 3. 상태를 'searching'으로 변경
       updateCollectionStatus(sessionId, 'searching')
 
-      // 4. Gemini Google Search Grounding으로 이미지 URL 검색
+      // 4. OpenRouter 웹 검색으로 이미지 URL 검색
       if (!apiKey) {
         updateCollectionStatus(sessionId, 'failed', 'API Key가 설정되지 않았습니다')
         return

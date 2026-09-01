@@ -2,7 +2,7 @@ import { createAnalysisSystemPrompt } from '../lib/analysisInstruction'
 import { Message, useAppStore } from '../store/useAppStore'
 import { GeminiContent } from '../types/gemini'
 import { CHAT_HISTORY_LIMIT } from '../lib/constants/api'
-import { geminiService } from '../lib/services/geminiService'
+import { openRouterService } from '../lib/services/openRouterService'
 import { removeCitationNumbers } from '../lib/utils/markdown'
 import { StreamingProgressTracker } from '../lib/utils/streamingProgress'
 import { devLog } from '../lib/utils/logger'
@@ -89,8 +89,8 @@ export function useGameAnalysis() {
       const progressTracker = new StreamingProgressTracker(systemPrompt || '기본 분석 템플릿을 사용합니다.')
       devLog.log('📊 [분석] 진행 상황 추적 시작 - 헤더 개수:', progressTracker.getTotalCount())
 
-      // Gemini 서비스를 통한 스트리밍 호출 (Google Search 포함, 사용자 선택 모델 적용)
-      await geminiService.streamGenerateContent(cleanApiKey, contents, {
+      // OpenRouter 서비스를 통한 스트리밍 호출 (웹 검색 포함, 사용자 선택 모델 적용)
+      await openRouterService.streamGenerateContent(cleanApiKey, contents, {
         model: useAppStore.getState().chatModel,
         tools: [
           {
@@ -200,7 +200,7 @@ export function useGameAnalysis() {
 
       callbacks.onComplete(chatText)
     } catch (error) {
-      console.error('Gemini API Error:', error)
+      console.error('OpenRouter API Error:', error)
       callbacks.onError(
         error instanceof Error ? error : new Error('알 수 없는 오류가 발생했습니다')
       )

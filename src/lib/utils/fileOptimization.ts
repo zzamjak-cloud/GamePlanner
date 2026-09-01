@@ -1,7 +1,7 @@
 // 파일 최적화 유틸리티 함수
 
 import { ReferenceFile } from '../../types/referenceFile'
-import { geminiService } from '../services/geminiService'
+import { openRouterService } from '../services/openRouterService'
 import { GeminiContent } from '../../types/gemini'
 
 /**
@@ -193,7 +193,7 @@ ${contentToSummarize}
       }
     ]
     
-    const summary = await geminiService.streamGenerateContent(apiKey, contents)
+    const summary = await openRouterService.streamGenerateContent(apiKey, contents)
     
     // 요약 길이 제한
     return summary.length > SUMMARY_MAX_LENGTH 
