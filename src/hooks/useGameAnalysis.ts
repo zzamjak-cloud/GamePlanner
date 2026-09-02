@@ -2,7 +2,7 @@ import { createAnalysisSystemPrompt } from '../lib/analysisInstruction'
 import { Message, useAppStore } from '../store/useAppStore'
 import { GeminiContent } from '../types/gemini'
 import { CHAT_HISTORY_LIMIT } from '../lib/constants/api'
-import { openRouterService } from '../lib/services/openRouterService'
+import { streamWithContinuation } from '../lib/services/openRouterService'
 import { removeCitationNumbers } from '../lib/utils/markdown'
 import { StreamingProgressTracker } from '../lib/utils/streamingProgress'
 import { devLog } from '../lib/utils/logger'
@@ -83,14 +83,14 @@ export function useGameAnalysis() {
       // })
 
       let fullResponse = ''
-      let wasMaxTokens = false // MAX_TOKENS로 종료되었는지 추적
 
       // 진행 상황 추적기 초기화 (템플릿 프롬프트만 사용)
       const progressTracker = new StreamingProgressTracker(systemPrompt || '기본 분석 템플릿을 사용합니다.')
       devLog.log('📊 [분석] 진행 상황 추적 시작 - 헤더 개수:', progressTracker.getTotalCount())
 
       // OpenRouter 서비스를 통한 스트리밍 호출 (웹 검색 포함, 사용자 선택 모델 적용)
-      await openRouterService.streamGenerateContent(cleanApiKey, contents, {
+      // 잘리면 자동으로 이어받아 재요청한다.
+      const { truncated: wasMaxTokens } = await streamWithContinuation(cleanApiKey, contents, {
         model: useAppStore.getState().chatModel,
         tools: [
           {
@@ -98,11 +98,6 @@ export function useGameAnalysis() {
           },
         ],
         onChunk: (chunk) => {
-          // finishReason 확인 (MAX_TOKENS 체크)
-          if (chunk.candidates && chunk.candidates[0]?.finishReason === 'MAX_TOKENS') {
-            wasMaxTokens = true
-          }
-
           if (chunk.candidates && chunk.candidates[0]?.content?.parts) {
             const text = chunk.candidates[0].content.parts[0]?.text || ''
             if (text) {

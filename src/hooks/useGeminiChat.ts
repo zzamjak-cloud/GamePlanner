@@ -1,7 +1,12 @@
 import { SYSTEM_INSTRUCTION } from '../lib/systemInstruction'
 import { Message, useAppStore } from '../store/useAppStore'
 import { GeminiContent } from '../types/gemini'
-import { openRouterService } from '../lib/services/openRouterService'
+import { streamWithContinuation } from '../lib/services/openRouterService'
+import {
+  SECTIONED_MODE_OVERRIDE,
+  generateSectioned,
+  planSections,
+} from '../lib/services/sectionedGeneration'
 import { CHAT_HISTORY_LIMIT } from '../lib/constants/api'
 import { StreamingProgressTracker } from '../lib/utils/streamingProgress'
 import { devLog } from '../lib/utils/logger'
@@ -75,22 +80,69 @@ export function useGeminiChat() {
       //   총메시지수: contents.length
       // })
 
+      // 신규 기획서는 섹션 단위로 나눠 생성한다.
+      // 각 섹션이 최대 출력 예산(65,536)을 온전히 쓰므로 잘림이 사실상 사라지고,
+      // 섹션당 집중도가 올라가 품질도 함께 개선된다.
+      // 기존 기획서 수정 요청은 문서 전체 맥락이 필요하므로 단일 호출 경로를 유지하고,
+      // 자동 이어쓰기로 잘림을 방어한다.
+      const template = systemPrompt || SYSTEM_INSTRUCTION
+      const isNewDocument = !currentMarkdown || !currentMarkdown.trim()
+      const sections = isNewDocument ? planSections(template) : []
+
+      if (sections.length > 0) {
+        devLog.log(`📐 [기획] 섹션 분할 생성 시작 - ${sections.length}개 섹션`)
+
+        // 시스템 지시문의 "전체 재출력" 규칙이 섹션 단위 생성과 충돌하므로 무효화 지시를 덧붙인다
+        const sectionedContents: GeminiContent[] = contents.map((content, index) =>
+          index === 0
+            ? {
+                ...content,
+                parts: [
+                  {
+                    text: `${content.parts[0]?.text || ''}
+
+${SECTIONED_MODE_OVERRIDE}`,
+                  },
+                ],
+              }
+            : content
+        )
+
+        const { markdown, truncated } = await generateSectioned(
+          cleanApiKey,
+          sections,
+          sectionedContents,
+          {
+            onProgress: (message) => callbacks.onChatUpdate(message),
+            onMarkdownUpdate: (md) => callbacks.onMarkdownUpdate(md),
+          },
+          useAppStore.getState().chatModel
+        )
+
+        callbacks.onMarkdownUpdate(markdown)
+
+        let sectionedChatText = '기획서 작성이 완료되었습니다.'
+        if (truncated) {
+          sectionedChatText += `
+
+⚠️ 경고: 일부 섹션이 너무 길어 완결되지 않았을 수 있습니다. 해당 섹션만 다시 요청해 주세요.`
+        }
+
+        callbacks.onComplete(sectionedChatText)
+        return
+      }
+
       let fullResponse = ''
-      let wasMaxTokens = false // MAX_TOKENS로 종료되었는지 추적
 
       // 진행 상황 추적기 초기화 (템플릿 프롬프트만 사용)
-      const progressTracker = new StreamingProgressTracker(systemPrompt || SYSTEM_INSTRUCTION)
+      const progressTracker = new StreamingProgressTracker(template)
       devLog.log('📊 [기획] 진행 상황 추적 시작 - 헤더 개수:', progressTracker.getTotalCount())
 
       // OpenRouter 서비스를 통한 스트리밍 호출 (사용자 선택 모델 적용)
-      await openRouterService.streamGenerateContent(cleanApiKey, contents, {
+      // 잘리면 자동으로 이어받아 재요청한다.
+      const { truncated: wasMaxTokens } = await streamWithContinuation(cleanApiKey, contents, {
         model: useAppStore.getState().chatModel,
         onChunk: (chunk) => {
-          // finishReason 확인 (MAX_TOKENS 체크)
-          if (chunk.candidates && chunk.candidates[0]?.finishReason === 'MAX_TOKENS') {
-            wasMaxTokens = true
-          }
-
           if (chunk.candidates && chunk.candidates[0]?.content?.parts) {
             const text = chunk.candidates[0].content.parts[0]?.text || ''
             if (text) {
