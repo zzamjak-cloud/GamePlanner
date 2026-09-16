@@ -83,4 +83,14 @@ export const TRANSLATION_CONFIG = {
   reasoning: { effort: 'low' as ReasoningEffort },
 } as const
 
+// 딸깍(게임 아이디어 생성) 전용 파라미터
+// 출력은 짧은 JSON 하나지만 다양성이 생명이라 temperature를 높게 잡는다.
+// 재료 조합은 코드에서 이미 랜덤화하므로 추론은 low로 충분하다.
+export const IDEA_GENERATION_CONFIG = {
+  temperature: 1.1,
+  top_p: 0.95,
+  max_tokens: 4096,
+  reasoning: { effort: 'low' as ReasoningEffort },
+} as const
+
 export const CHAT_HISTORY_LIMIT = 8 // 최근 대화 히스토리 개수 (비용 최적화를 위해 10 → 8로 축소)

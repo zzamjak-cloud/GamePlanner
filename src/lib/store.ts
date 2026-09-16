@@ -2,7 +2,7 @@ import { Store } from '@tauri-apps/plugin-store'
 import { PromptTemplate } from '../types/promptTemplate'
 import { ChatSession } from '../store/useAppStore'
 import { Settings, SaveSettingsParams, WindowState } from '../types/store'
-import { CollectionSession } from '../types/collection'
+import { GameIdea } from '../types/idea'
 import { migrateSettings } from './migrations'
 import { devLog } from './utils/logger'
 
@@ -96,8 +96,8 @@ export async function getSettings(): Promise<Settings> {
   // 창 상태
   const windowState = await store.get<WindowState>('window_state')
 
-  // 수집 세션
-  const collectionSessions = await store.get<CollectionSession[]>('collection_sessions')
+  // 딸깍 아이디어 히스토리
+  const ideas = await store.get<GameIdea[]>('ideas')
 
   // 채팅 모델
   const chatModel = await store.get<string>('chat_model')
@@ -113,7 +113,7 @@ export async function getSettings(): Promise<Settings> {
     currentPlanningTemplateId,
     currentAnalysisTemplateId,
     windowState,
-    collectionSessions,
+    ideas,
     chatModel,
   }
 
@@ -257,32 +257,23 @@ export async function getWindowState(): Promise<WindowState | null> {
 }
 
 /**
- * 수집 세션을 저장합니다
- * 썸네일 데이터(thumbnailData)는 메모리 전용 필드이므로 저장에서 제외합니다
+ * 딸깍 아이디어 히스토리를 저장합니다
  */
-export async function saveCollectionSessions(sessions: CollectionSession[]): Promise<void> {
+export async function saveIdeas(ideas: GameIdea[]): Promise<void> {
   const store = await getStore()
-
-  // 썸네일 데이터 제거 후 저장 (메모리 전용 필드)
-  const sessionsToSave = sessions.map(s => ({
-    ...s,
-    images: s.images.map(img => {
-      const { thumbnailData, ...rest } = img
-      return rest
-    })
-  }))
-
-  await store.set('collection_sessions', sessionsToSave)
+  await store.set('ideas', ideas)
   await saveStore()
-
-  // 저장 후 검증
-  const verifySessions = await store.get<CollectionSession[]>('collection_sessions')
-  if (!verifySessions || verifySessions.length !== sessions.length) {
-    console.error('❌ [saveCollectionSessions] 수집 세션 저장 실패! 저장된 개수가 일치하지 않음')
-    console.error('  - 저장하려던 개수:', sessions.length)
-    console.error('  - 실제 저장된 개수:', verifySessions?.length || 0)
-  } else {
-    devLog.log('💾 수집 세션 저장:', sessions.length, '개')
-  }
+  devLog.log('💾 아이디어 저장:', ideas.length, '개')
 }
 
+/**
+ * 제거된 수집 기능이 남긴 저장 키를 정리합니다 (1회성 마이그레이션)
+ */
+export async function removeLegacyCollectionData(): Promise<void> {
+  const store = await getStore()
+  if (await store.has('collection_sessions')) {
+    await store.delete('collection_sessions')
+    await saveStore()
+    devLog.log('🧹 레거시 수집 세션 데이터 제거')
+  }
+}

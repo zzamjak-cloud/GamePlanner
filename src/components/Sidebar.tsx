@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Plus, MessageSquare, Trash2, Save, Upload, FileText, FileEdit, Search, GripVertical, Edit, Check, X, FolderDown } from 'lucide-react'
+import { Plus, MessageSquare, Trash2, Save, Upload, FileText, FileEdit, Search, GripVertical, Edit, Check, X, Lightbulb, Star } from 'lucide-react'
 import { save, open } from '@tauri-apps/plugin-dialog'
 import { writeTextFile, readTextFile } from '@tauri-apps/plugin-fs'
 import { useAppStore, ChatSession, SessionType } from '../store/useAppStore'
@@ -8,7 +8,6 @@ import { TemplateSelector } from './TemplateSelector'
 import { AnalysisStartModal } from './AnalysisStartModal'
 import { TemplateType } from '../types/promptTemplate'
 import { devLog } from '../lib/utils/logger'
-import { useCollection } from '../hooks/useCollection'
 
 interface SidebarProps {
   onStartAnalysis?: (gameName: string) => void
@@ -27,12 +26,12 @@ export function Sidebar({ onStartAnalysis }: SidebarProps) {
     getTemplateById,
     reorderSessions,
     createAnalysisSession,
-    // 수집 세션 관련
-    collectionSessions,
-    currentCollectionId,
-    loadCollectionSession,
-    deleteCollectionSession,
-
+    // 딸깍 아이디어 관련
+    ideas,
+    currentIdeaId,
+    setCurrentIdeaId,
+    deleteIdea,
+    toggleIdeaStar,
   } = useAppStore()
 
   // 삭제 확인 다이얼로그 상태
@@ -52,10 +51,6 @@ export function Sidebar({ onStartAnalysis }: SidebarProps) {
 
   // 분석 시작 모달 상태
   const [showAnalysisStart, setShowAnalysisStart] = useState(false)
-
-  // 게임 제목 입력 모달 상태 (수집 탭)
-  const [showGameTitleModal, setShowGameTitleModal] = useState(false)
-  const [collectionGameName, setCollectionGameName] = useState('')
 
   // 세션 제목 입력 모달 상태
   const [showTitleInput, setShowTitleInput] = useState(false)
@@ -188,9 +183,8 @@ export function Sidebar({ onStartAnalysis }: SidebarProps) {
       setShowTemplateSelector(true)
     } else if (currentSessionType === SessionType.ANALYSIS) {
       setShowAnalysisStart(true)
-    } else if (currentSessionType === SessionType.COLLECTION) {
-      setShowGameTitleModal(true)
     }
+    // 딸깍 탭은 새 세션 개념이 없어 + 버튼을 노출하지 않는다
   }
 
   // 분석 시작 처리 핸들러
@@ -199,17 +193,6 @@ export function Sidebar({ onStartAnalysis }: SidebarProps) {
     loadSession(sessionId)
     setShowAnalysisStart(false)
     onStartAnalysis?.(gameName)
-  }
-
-  // 수집 훅
-  const { startCollection } = useCollection()
-
-  // 수집 세션 생성 및 이미지 수집 시작
-  const handleStartCollection = (gameName: string) => {
-    setShowGameTitleModal(false)
-    setCollectionGameName('')
-    // startCollection이 폴더 생성, 세션 생성, 이미지 검색/다운로드를 모두 처리
-    startCollection(gameName)
   }
 
   // 템플릿 선택 완료 후 제목 입력 모달 표시
@@ -276,15 +259,9 @@ export function Sidebar({ onStartAnalysis }: SidebarProps) {
     // 탭 타입 변경
     setCurrentSessionType(type)
 
-    if (type === SessionType.COLLECTION) {
-      // 수집 탭: collectionSessions 중 가장 최근 세션 로드
-      const sorted = [...collectionSessions].sort((a, b) => b.updatedAt - a.updatedAt)
-      if (sorted.length > 0) {
-        loadCollectionSession(sorted[0].id)
-      } else {
-        // 수집 세션이 없으면 빈 상태
-        useAppStore.setState({ currentSessionId: null, messages: [], markdownContent: '' })
-      }
+    if (type === SessionType.IDEA) {
+      // 딸깍 탭: 채팅 세션 상태는 비우고 아이디어 히스토리는 그대로 유지
+      useAppStore.setState({ currentSessionId: null, messages: [], markdownContent: '' })
       return
     }
 
@@ -313,9 +290,9 @@ export function Sidebar({ onStartAnalysis }: SidebarProps) {
 
   const confirmDelete = () => {
     if (deleteConfirm) {
-      // 수집 탭이면 deleteCollectionSession 사용
-      if (currentSessionType === SessionType.COLLECTION) {
-        deleteCollectionSession(deleteConfirm)
+      // 딸깍 탭이면 아이디어 삭제
+      if (currentSessionType === SessionType.IDEA) {
+        deleteIdea(deleteConfirm)
       } else {
         deleteSession(deleteConfirm)
       }
@@ -497,10 +474,8 @@ export function Sidebar({ onStartAnalysis }: SidebarProps) {
                 <div className="flex items-center gap-2 mb-1">
                   {draggedSession.type === SessionType.PLANNING ? (
                     <FileText className="w-4 h-4 text-primary" />
-                  ) : draggedSession.type === SessionType.ANALYSIS ? (
-                    <Search className="w-4 h-4 text-primary" />
                   ) : (
-                    <FolderDown className="w-4 h-4 text-primary" />
+                    <Search className="w-4 h-4 text-primary" />
                   )}
                   <h3 className="font-semibold text-sm truncate">{draggedSession.title}</h3>
                 </div>
@@ -540,37 +515,29 @@ export function Sidebar({ onStartAnalysis }: SidebarProps) {
           <span className="font-medium text-sm">분석</span>
         </button>
         <button
-          onClick={() => handleTabChange(SessionType.COLLECTION)}
+          onClick={() => handleTabChange(SessionType.IDEA)}
           className={`flex-1 flex items-center justify-center gap-1 px-2 py-3 transition-colors ${
-            currentSessionType === SessionType.COLLECTION
+            currentSessionType === SessionType.IDEA
               ? 'bg-background border-t-2 border-l-2 border-r-2 border-primary text-primary font-semibold'
               : 'bg-gray-200 dark:bg-gray-800 text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 border-b-2 border-primary'
           }`}
         >
-          <FolderDown className="w-4 h-4" />
-          <span className="font-medium text-sm">수집</span>
+          <Lightbulb className="w-4 h-4" />
+          <span className="font-medium text-sm">딸깍</span>
         </button>
       </div>
 
-      {/* 버튼 영역 */}
-      <div className="p-3 border-b border-border">
-        <div className="flex gap-2">
-          <button
-            onClick={handleNewChat}
-            className="flex-1 flex items-center justify-center p-2 rounded-lg bg-muted hover:bg-accent transition-colors"
-            title={
-              currentSessionType === SessionType.PLANNING
-                ? '새 게임 기획'
-                : currentSessionType === SessionType.ANALYSIS
-                  ? '게임 분석'
-                  : '게임 이미지 수집'
-            }
-          >
-            <Plus className="w-4 h-4" />
-          </button>
-          {/* 수집 탭에서는 불러오기/템플릿 관리 버튼 숨김 */}
-          {currentSessionType !== SessionType.COLLECTION && (
-            <>
+      {/* 버튼 영역 (딸깍 탭은 세션 개념이 없어 숨김) */}
+      {currentSessionType !== SessionType.IDEA && (
+        <div className="p-3 border-b border-border">
+          <div className="flex gap-2">
+            <button
+              onClick={handleNewChat}
+              className="flex-1 flex items-center justify-center p-2 rounded-lg bg-muted hover:bg-accent transition-colors"
+              title={currentSessionType === SessionType.PLANNING ? '새 게임 기획' : '게임 분석'}
+            >
+              <Plus className="w-4 h-4" />
+            </button>
               <button
                 onClick={handleImportSession}
                 className="flex-1 flex items-center justify-center p-2 rounded-lg bg-muted hover:bg-accent transition-colors"
@@ -585,69 +552,68 @@ export function Sidebar({ onStartAnalysis }: SidebarProps) {
               >
                 <FileEdit className="w-4 h-4" />
               </button>
-            </>
-          )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* 세션 목록 영역 */}
       <div ref={listRef} className="flex-1 overflow-y-auto p-2">
-        {currentSessionType === SessionType.COLLECTION ? (
-          // 수집 탭: collectionSessions 목록 렌더링
-          collectionSessions.length === 0 ? (
+        {currentSessionType === SessionType.IDEA ? (
+          // 딸깍 탭: 아이디어 히스토리 렌더링 (즐겨찾기 우선, 최신순)
+          ideas.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-muted-foreground text-sm">
-              <FolderDown className="w-8 h-8 mb-2 opacity-50" />
-              <p>수집 세션이 없습니다</p>
-              <p className="text-xs mt-1">게임 이미지 수집을 시작하세요</p>
+              <Lightbulb className="w-8 h-8 mb-2 opacity-50" />
+              <p>아직 아이디어가 없습니다</p>
+              <p className="text-xs mt-1">딸깍 버튼을 눌러보세요</p>
             </div>
           ) : (
             <div className="space-y-1">
-              {[...collectionSessions].sort((a, b) => b.updatedAt - a.updatedAt).map((session) => {
-                const isActive = currentCollectionId === session.id
-                return (
-                  <div
-                    key={session.id}
-                    onClick={() => loadCollectionSession(session.id)}
-                    className={`group relative p-3 rounded-lg transition-all select-none cursor-pointer ${
-                      isActive
-                        ? 'bg-primary/10 border-l-4 border-primary pl-2.5'
-                        : 'hover:bg-accent/50 border-l-4 border-transparent'
-                    }`}
-                  >
-                    <div className="flex items-start gap-2">
-                      <FolderDown className={`w-4 h-4 mt-0.5 flex-shrink-0 ${
-                        isActive ? 'text-primary' : 'text-muted-foreground'
-                      }`} />
-                      <div className="flex-1 min-w-0">
-                        <div className={`font-medium text-sm truncate ${isActive ? 'text-primary' : ''}`}>
-                          {session.gameName}
+              {[...ideas]
+                .sort((a, b) => Number(b.starred) - Number(a.starred) || b.createdAt - a.createdAt)
+                .map((idea) => {
+                  const isActive = currentIdeaId === idea.id
+                  return (
+                    <div
+                      key={idea.id}
+                      onClick={() => setCurrentIdeaId(idea.id)}
+                      className={`group relative p-3 rounded-lg transition-all select-none cursor-pointer ${
+                        isActive
+                          ? 'bg-primary/10 border-l-4 border-primary pl-2.5'
+                          : 'hover:bg-accent/50 border-l-4 border-transparent'
+                      }`}
+                    >
+                      <div className="flex items-start gap-2">
+                        <Lightbulb className={`w-4 h-4 mt-0.5 flex-shrink-0 ${
+                          isActive ? 'text-primary' : 'text-muted-foreground'
+                        }`} />
+                        <div className="flex-1 min-w-0">
+                          <div className={`font-medium text-sm truncate ${isActive ? 'text-primary' : ''}`}>
+                            {idea.title}
+                          </div>
+                          <div className="text-xs text-muted-foreground mt-0.5 truncate">
+                            {idea.hook}
+                          </div>
                         </div>
-                        <div className="text-xs text-muted-foreground mt-0.5">
-                          {/* 이미지 수 및 상태 표시 */}
-                          이미지 {session.images.length}개
-                          {session.status !== 'idle' && (
-                            <span className="ml-1">
-                              {session.status === 'searching' && '· 검색 중'}
-                              {session.status === 'downloading' && '· 다운로드 중'}
-                              {session.status === 'completed' && '· 완료'}
-                              {session.status === 'failed' && '· 실패'}
-                            </span>
-                          )}
+                        <div className={`flex gap-1 ${idea.starred ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-opacity`}>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); toggleIdeaStar(idea.id) }}
+                            className="p-1 rounded hover:bg-yellow-100 dark:hover:bg-yellow-900 transition-colors"
+                            title={idea.starred ? '즐겨찾기 해제' : '즐겨찾기'}
+                          >
+                            <Star className={`w-3.5 h-3.5 ${idea.starred ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}`} />
+                          </button>
+                          <button
+                            onClick={(e) => handleDeleteClick(e, idea.id)}
+                            className="p-1 rounded hover:bg-destructive/10 transition-colors"
+                            title="삭제"
+                          >
+                            <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                          </button>
                         </div>
-                      </div>
-                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button
-                          onClick={(e) => handleDeleteClick(e, session.id)}
-                          className="p-1 rounded hover:bg-destructive/10 transition-colors"
-                          title="삭제"
-                        >
-                          <Trash2 className="w-3.5 h-3.5 text-destructive" />
-                        </button>
                       </div>
                     </div>
-                  </div>
-                )
-              })}
+                  )
+                })}
             </div>
           )
         ) : (
@@ -794,9 +760,11 @@ export function Sidebar({ onStartAnalysis }: SidebarProps) {
       {deleteConfirm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-background border border-border rounded-lg p-6 shadow-lg max-w-sm w-full mx-4">
-            <h3 className="text-lg font-semibold mb-2">세션 삭제</h3>
+            <h3 className="text-lg font-semibold mb-2">
+              {currentSessionType === SessionType.IDEA ? '아이디어 삭제' : '세션 삭제'}
+            </h3>
             <p className="text-muted-foreground mb-6">
-              이 채팅을 삭제하시겠습니까?<br />
+              {currentSessionType === SessionType.IDEA ? '이 아이디어를 삭제하시겠습니까?' : '이 채팅을 삭제하시겠습니까?'}<br />
               이 작업은 되돌릴 수 없습니다.
             </p>
             <div className="flex gap-3 justify-end">
@@ -863,56 +831,6 @@ export function Sidebar({ onStartAnalysis }: SidebarProps) {
         onClose={() => setShowAnalysisStart(false)}
         onStart={handleAnalysisStart}
       />
-
-      {/* 수집 세션 게임 제목 입력 모달 */}
-      {showGameTitleModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-background border border-border rounded-lg p-6 shadow-lg max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold mb-4">게임 이미지 수집</h3>
-            <label className="block text-sm font-medium mb-2">
-              게임 이름 <span className="text-destructive">*</span>
-            </label>
-            <input
-              type="text"
-              value={collectionGameName}
-              onChange={(e) => setCollectionGameName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && collectionGameName.trim()) {
-                  handleStartCollection(collectionGameName.trim())
-                } else if (e.key === 'Escape') {
-                  setShowGameTitleModal(false)
-                  setCollectionGameName('')
-                }
-              }}
-              placeholder="수집할 게임 이름을 입력하세요"
-              className="w-full px-3 py-2 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary mb-6"
-              autoFocus
-            />
-            <div className="flex gap-3 justify-end">
-              <button
-                onClick={() => {
-                  setShowGameTitleModal(false)
-                  setCollectionGameName('')
-                }}
-                className="px-4 py-2 rounded-lg bg-muted hover:bg-accent transition-colors font-medium"
-              >
-                취소
-              </button>
-              <button
-                onClick={() => {
-                  if (collectionGameName.trim()) {
-                    handleStartCollection(collectionGameName.trim())
-                  }
-                }}
-                disabled={!collectionGameName.trim()}
-                className="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                수집 시작
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* 세션 제목 입력 모달 */}
       {showTitleInput && (

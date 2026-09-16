@@ -6,7 +6,7 @@ import { createTemplateSlice, TemplateSlice } from './slices/templateSlice'
 import { createSettingsSlice, SettingsSlice } from './slices/settingsSlice'
 import { createUiSlice, UiSlice } from './slices/uiSlice'
 import { createChecklistSlice, ChecklistSlice } from './slices/checklistSlice'
-import { createCollectionSlice, CollectionSlice } from './slices/collectionSlice'
+import { createIdeaSlice, IdeaSlice } from './slices/ideaSlice'
 
 // 공통 타입 export
 export interface Message {
@@ -17,7 +17,7 @@ export interface Message {
 export enum SessionType {
   PLANNING = 'planning',
   ANALYSIS = 'analysis',
-  COLLECTION = 'collection',
+  IDEA = 'idea',
 }
 
 export interface ChatSession {
@@ -49,7 +49,7 @@ export interface ChatSession {
 }
 
 // 통합된 App State 타입
-export type AppState = SessionSlice & TemplateSlice & SettingsSlice & UiSlice & ChecklistSlice & CollectionSlice
+export type AppState = SessionSlice & TemplateSlice & SettingsSlice & UiSlice & ChecklistSlice & IdeaSlice
 
 // 스토어 생성
 export const useAppStore = create<AppState>()((...a) => ({
@@ -58,5 +58,5 @@ export const useAppStore = create<AppState>()((...a) => ({
   ...createSettingsSlice(...a),
   ...createUiSlice(...a),
   ...createChecklistSlice(...a),
-  ...createCollectionSlice(...a),
+  ...createIdeaSlice(...a),
 }))

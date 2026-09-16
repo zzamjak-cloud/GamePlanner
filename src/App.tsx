@@ -7,7 +7,7 @@ import { SettingsModal } from './components/SettingsModal'
 import { Resizer } from './components/Resizer'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { UpdateModal } from './components/UpdateModal'
-import { CollectionPanel } from './components/CollectionPanel'
+import { IdeaPanel } from './components/IdeaPanel'
 import { useAppStore } from './store/useAppStore'
 import { SessionType } from './store/useAppStore'
 import { useAppInitialization } from './hooks/useAppInitialization'
@@ -160,11 +160,11 @@ function App() {
           {/* 좌측 사이드바 (채팅 목록) */}
           <Sidebar onStartAnalysis={handleSendMessageWrapper} />
 
-          {/* 메인 컨텐츠 영역 (수집 탭이면 CollectionPanel, 그 외엔 기존 3컬럼) */}
+          {/* 메인 컨텐츠 영역 (딸깍 탭이면 IdeaPanel, 그 외엔 기존 3컬럼) */}
           <div className="flex-1 flex overflow-hidden">
-            {currentSessionType === SessionType.COLLECTION ? (
-              /* 수집 탭: CollectionPanel이 전체 영역 차지 */
-              <CollectionPanel />
+            {currentSessionType === SessionType.IDEA ? (
+              /* 딸깍 탭: IdeaPanel이 전체 영역 차지 */
+              <IdeaPanel />
             ) : (
               /* 기획/분석 탭: 기존 3컬럼 레이아웃 유지 */
               <>

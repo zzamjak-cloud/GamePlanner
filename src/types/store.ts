@@ -2,7 +2,7 @@
 
 import { ChatSession } from '../store/useAppStore'
 import { PromptTemplate } from './promptTemplate'
-import { CollectionSession } from './collection'
+import { GameIdea } from './idea'
 
 export interface WindowState {
   x: number
@@ -23,7 +23,7 @@ export interface Settings {
   currentPlanningTemplateId?: string | null
   currentAnalysisTemplateId?: string | null
   windowState?: WindowState
-  collectionSessions?: CollectionSession[]
+  ideas?: GameIdea[]
   chatModel?: string | null
 }
 

@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react'
 import { useAppStore, SessionType } from '../store/useAppStore'
-import { getSettings, saveSettings, saveTemplates } from '../lib/store'
+import { getSettings, saveSettings, saveTemplates, removeLegacyCollectionData } from '../lib/store'
 import { DEFAULT_TEMPLATES, DEFAULT_PLANNING_TEMPLATE, DEFAULT_STORY_TEMPLATE, DEFAULT_ANALYSIS_TEMPLATE } from '../lib/templateDefaults'
 import { migrateSessions, migrateSettings } from '../lib/migrations'
 import { devLog } from '../lib/utils/logger'
@@ -161,11 +161,14 @@ export function useAppInitialization(options: UseAppInitializationOptions = {}) 
           devLog.log('세션 목록:', savedSessions.map((s, idx) => `${idx + 1}. ${s.title} (${s.type})`).join(', '))
         }
 
-        // 수집 세션 로드
-        if (settings.collectionSessions && settings.collectionSessions.length > 0) {
-          devLog.log('📂 수집 세션 로드:', settings.collectionSessions.length, '개')
-          useAppStore.setState({ collectionSessions: settings.collectionSessions })
+        // 딸깍 아이디어 히스토리 로드
+        if (settings.ideas && settings.ideas.length > 0) {
+          devLog.log('💡 아이디어 히스토리 로드:', settings.ideas.length, '개')
+          useAppStore.setState({ ideas: settings.ideas, currentIdeaId: settings.ideas[0].id })
         }
+
+        // 제거된 수집 기능의 잔여 데이터 정리
+        await removeLegacyCollectionData()
 
         // 저장된 세션이 있으면 복원, 없으면 빈 상태 유지
         if (savedSessions && Array.isArray(savedSessions) && savedSessions.length > 0) {

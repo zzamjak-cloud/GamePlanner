@@ -1,6 +1,6 @@
 # GamePlanner
 
-AI 기반 모바일 게임 기획서 작성 및 게임 분석 데스크톱 애플리케이션 (v0.2.9)
+AI 기반 모바일 게임 기획서 작성 및 게임 분석 데스크톱 애플리케이션 (v0.3.0)
 
 OpenRouter를 통한 Gemini AI와의 대화를 통해 개발자가 즉시 착수할 수 있는 수준의 게임 기획서를 생성하고, 기존 게임에 대한 심층 분석 보고서를 자동으로 작성합니다.
 
@@ -17,9 +17,10 @@ OpenRouter를 통한 Gemini AI와의 대화를 통해 개발자가 즉시 착수
 - 게임명 입력만으로 Google Search 기반 최신 정보 수집 및 체계적 분석
 - 시장 현황, 수익 모델, 핵심 메커니즘 등을 포함한 종합 분석 보고서 자동 생성
 
-### 3. 게임 이미지 수집 (Collection)
-- DuckDuckGo, Steam, Google Play에서 게임 스크린샷/프로모션 이미지 자동 검색 및 다운로드
-- 로컬 폴더에 자동 정리 및 저장
+### 3. 딸깍 — 게임 코어 아이디어 생성 (Idea)
+- 버튼 한 번에 게임 코어 로직을 **3줄 요약**으로 랜덤 생성
+- 히트 게임·밈·쇼츠 트렌드 등 영감 소재와 심리 트리거, 비틀기 방식을 매 클릭 랜덤 조합해 다양성 확보
+- 즐겨찾기·히스토리·마크다운 복사 지원
 
 ### 4. Notion 연동
 - 작성된 기획서/분석 보고서를 Notion 데이터베이스로 원클릭 내보내기
@@ -65,21 +66,21 @@ src/
 ├── components/       # UI 컴포넌트
 │   ├── ChatPanel       # AI 대화 패널
 │   ├── MarkdownPreview # 마크다운 미리보기 및 내보내기
-│   ├── CollectionPanel # 이미지 수집 패널
+│   ├── IdeaPanel       # 딸깍(아이디어 생성) 패널
 │   ├── Sidebar/        # 세션 목록 사이드바
 │   ├── TemplateEditor/ # 프롬프트 템플릿 편집기
 │   └── ...
 ├── hooks/            # React 커스텀 훅
 │   ├── useMessageHandler  # 메시지 처리 (기획/분석 라우팅)
 │   ├── useGameAnalysis    # 게임 분석 로직
-│   ├── useCollection      # 이미지 수집 플로우
+│   ├── useIdeaGenerator   # 딸깍 아이디어 생성 플로우
 │   ├── useAutoSave        # 세션 자동 저장
 │   └── ...
 ├── store/            # Zustand 상태 관리
 │   ├── useAppStore.ts     # 메인 스토어 (슬라이스 통합)
-│   └── slices/            # session, template, settings, ui, checklist, collection
+│   └── slices/            # session, template, settings, ui, checklist, idea
 ├── lib/              # 핵심 로직
-│   ├── services/          # OpenRouter API, 스토리지, 수집, 인증 서비스
+│   ├── services/          # OpenRouter API, 스토리지, 아이디어 생성, 인증 서비스
 │   ├── constants/         # API, UI 상수
 │   ├── utils/             # 유틸리티 함수
 │   └── migrations/        # 데이터 마이그레이션
