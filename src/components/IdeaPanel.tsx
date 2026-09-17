@@ -1,9 +1,11 @@
 // 딸깍 패널 - 버튼 한 번에 게임 코어 아이디어 3줄 요약을 생성해 보여준다
 
 import { useState } from 'react'
-import { Lightbulb, Loader2, Star, Copy, Check, Sparkles } from 'lucide-react'
+import { Lightbulb, Loader2, Star, Copy, Check, Sparkles, BookOpen } from 'lucide-react'
+import { openUrl } from '@tauri-apps/plugin-opener'
 import { useAppStore } from '../store/useAppStore'
 import { useIdeaGenerator } from '../hooks/useIdeaGenerator'
+import { createNotionIdeaPage } from '../lib/notionBlocks'
 
 // 로딩 중 버튼에 돌아가며 표시할 문구
 const LOADING_MESSAGES = [
@@ -19,8 +21,44 @@ export function IdeaPanel() {
     state.ideas.find((i) => i.id === state.currentIdeaId)
   )
   const toggleIdeaStar = useAppStore((state) => state.toggleIdeaStar)
+  const { notionApiKey, notionIdeaDatabaseId } = useAppStore()
   const [copied, setCopied] = useState(false)
   const [loadingIndex, setLoadingIndex] = useState(0)
+  const [isNotionLoading, setIsNotionLoading] = useState(false)
+
+  // 현재 아이디어를 Notion 데이터베이스 페이지로 저장
+  const handleSaveToNotion = async () => {
+    if (!currentIdea) return
+
+    if (!notionApiKey || !notionIdeaDatabaseId) {
+      alert('노션 API 설정이 필요합니다.\n\n설정 메뉴에서 Notion API Key와 딸깍 Database ID를 입력해주세요.')
+      return
+    }
+
+    setIsNotionLoading(true)
+
+    try {
+      const pageUrl = await createNotionIdeaPage(currentIdea, notionApiKey, notionIdeaDatabaseId)
+
+      if (!pageUrl) {
+        throw new Error('페이지 URL을 받지 못했습니다')
+      }
+
+      alert('노션에 저장되었습니다!\n\n' + pageUrl)
+      try {
+        await openUrl(pageUrl)
+      } catch (openError) {
+        // 페이지 열기 실패는 무시 (수동으로 열 수 있음)
+        console.error('페이지 열기 실패:', openError)
+      }
+    } catch (error) {
+      console.error('❌ 노션 저장 실패:', error)
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      alert('노션 저장에 실패했습니다.\n\n' + errorMessage)
+    } finally {
+      setIsNotionLoading(false)
+    }
+  }
 
   // 딸깍 클릭 - 로딩 문구를 랜덤으로 바꿔 매번 다른 느낌을 준다
   const handleClick = async () => {
@@ -123,6 +161,18 @@ export function IdeaPanel() {
                     <Check className="w-5 h-5 text-green-500" />
                   ) : (
                     <Copy className="w-5 h-5 text-muted-foreground" />
+                  )}
+                </button>
+                <button
+                  onClick={handleSaveToNotion}
+                  disabled={isNotionLoading}
+                  className="p-2 rounded-lg hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="노션에 저장"
+                >
+                  {isNotionLoading ? (
+                    <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+                  ) : (
+                    <BookOpen className="w-5 h-5 text-muted-foreground" />
                   )}
                 </button>
               </div>

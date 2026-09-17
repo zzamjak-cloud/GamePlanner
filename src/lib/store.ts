@@ -75,6 +75,7 @@ export async function getSettings(): Promise<Settings> {
   const notionApiKey = await store.get<string>('notion_api_key')
   const notionPlanningDatabaseId = await store.get<string>('notion_planning_database_id')
   const notionAnalysisDatabaseId = await store.get<string>('notion_analysis_database_id')
+  const notionIdeaDatabaseId = await store.get<string>('notion_idea_database_id')
   const chatSessions = await store.get<ChatSession[]>('chat_sessions')
 
   // 로그 제거: 너무 빈번하게 호출됨
@@ -107,6 +108,7 @@ export async function getSettings(): Promise<Settings> {
     notionApiKey,
     notionPlanningDatabaseId,
     notionAnalysisDatabaseId,
+    notionIdeaDatabaseId,
     oldNotionDbId,
     chatSessions,
     promptTemplates,
@@ -138,6 +140,9 @@ export async function saveSettings(settings: SaveSettingsParams): Promise<void> 
   }
   if (settings.notionAnalysisDatabaseId !== undefined) {
     await store.set('notion_analysis_database_id', settings.notionAnalysisDatabaseId)
+  }
+  if (settings.notionIdeaDatabaseId !== undefined) {
+    await store.set('notion_idea_database_id', settings.notionIdeaDatabaseId)
   }
   if (settings.chatModel !== undefined) {
     await store.set('chat_model', settings.chatModel)
@@ -176,6 +181,9 @@ export async function saveSessions(sessions: ChatSession[]): Promise<void> {
   }
   if (currentSettings.notionAnalysisDatabaseId) {
     await store.set('notion_analysis_database_id', currentSettings.notionAnalysisDatabaseId)
+  }
+  if (currentSettings.notionIdeaDatabaseId) {
+    await store.set('notion_idea_database_id', currentSettings.notionIdeaDatabaseId)
   }
   if (currentSettings.chatModel) {
     await store.set('chat_model', currentSettings.chatModel)

@@ -16,6 +16,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const [notionApiKeyInput, setNotionApiKeyInput] = useState('')
   const [notionPlanningDatabaseIdInput, setNotionPlanningDatabaseIdInput] = useState('')
   const [notionAnalysisDatabaseIdInput, setNotionAnalysisDatabaseIdInput] = useState('')
+  const [notionIdeaDatabaseIdInput, setNotionIdeaDatabaseIdInput] = useState('')
   const [chatModelInput, setChatModelInput] = useState<string>(DEFAULT_CHAT_MODEL)
   const [isSaving, setIsSaving] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
@@ -24,11 +25,13 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     notionApiKey,
     notionPlanningDatabaseId,
     notionAnalysisDatabaseId,
+    notionIdeaDatabaseId,
     chatModel,
     setApiKey,
     setNotionApiKey,
     setNotionPlanningDatabaseId,
     setNotionAnalysisDatabaseId,
+    setNotionIdeaDatabaseId,
     setChatModel,
   } = useAppStore()
   const { user, logout } = useAuth()
@@ -55,9 +58,10 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       if (notionApiKey) setNotionApiKeyInput(notionApiKey)
       if (notionPlanningDatabaseId) setNotionPlanningDatabaseIdInput(notionPlanningDatabaseId)
       if (notionAnalysisDatabaseId) setNotionAnalysisDatabaseIdInput(notionAnalysisDatabaseId)
+      if (notionIdeaDatabaseId) setNotionIdeaDatabaseIdInput(notionIdeaDatabaseId)
       if (chatModel) setChatModelInput(chatModel)
     }
-  }, [isOpen, apiKey, notionApiKey, notionPlanningDatabaseId, notionAnalysisDatabaseId, chatModel])
+  }, [isOpen, apiKey, notionApiKey, notionPlanningDatabaseId, notionAnalysisDatabaseId, notionIdeaDatabaseId, chatModel])
 
   const handleSave = async () => {
     if (!apiKeyInput.trim()) {
@@ -73,6 +77,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         notionApiKey: notionApiKeyInput.trim() || undefined,
         notionPlanningDatabaseId: notionPlanningDatabaseIdInput.trim() || undefined,
         notionAnalysisDatabaseId: notionAnalysisDatabaseIdInput.trim() || undefined,
+        notionIdeaDatabaseId: notionIdeaDatabaseIdInput.trim() || undefined,
         chatModel: chatModelInput,
       })
 
@@ -86,6 +91,9 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       }
       if (notionAnalysisDatabaseIdInput.trim()) {
         setNotionAnalysisDatabaseId(notionAnalysisDatabaseIdInput.trim())
+      }
+      if (notionIdeaDatabaseIdInput.trim()) {
+        setNotionIdeaDatabaseId(notionIdeaDatabaseIdInput.trim())
       }
       setChatModel(chatModelInput)
 
@@ -213,6 +221,23 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             />
             <p className="text-xs text-muted-foreground mt-1">
               게임 분석 결과를 저장할 Notion 데이터베이스 ID
+            </p>
+          </div>
+
+          {/* Notion Idea Database ID */}
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              딸깍 Notion Database ID (선택)
+            </label>
+            <input
+              type="text"
+              value={notionIdeaDatabaseIdInput}
+              onChange={(e) => setNotionIdeaDatabaseIdInput(e.target.value)}
+              placeholder="3e8e151c536d9139b2b0e598d3f1768f"
+              className="w-full px-3 py-2 rounded-md border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              딸깍으로 생성한 게임 아이디어를 저장할 Notion 데이터베이스 ID
             </p>
           </div>
 

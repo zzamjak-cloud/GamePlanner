@@ -17,6 +17,7 @@ export interface Settings {
   notionApiKey?: string | null
   notionPlanningDatabaseId?: string | null
   notionAnalysisDatabaseId?: string | null
+  notionIdeaDatabaseId?: string | null
   oldNotionDbId?: string | null
   chatSessions?: ChatSession[]
   promptTemplates?: PromptTemplate[]
@@ -32,6 +33,7 @@ export interface SaveSettingsParams {
   notionApiKey?: string
   notionPlanningDatabaseId?: string
   notionAnalysisDatabaseId?: string
+  notionIdeaDatabaseId?: string
   chatModel?: string
 }
 

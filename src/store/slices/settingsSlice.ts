@@ -9,6 +9,7 @@ export interface SettingsSlice {
   notionApiKey: string | null
   notionPlanningDatabaseId: string | null
   notionAnalysisDatabaseId: string | null
+  notionIdeaDatabaseId: string | null
   chatModel: ChatModel
   isLoading: boolean
 
@@ -17,6 +18,7 @@ export interface SettingsSlice {
   setNotionApiKey: (key: string | null) => void
   setNotionPlanningDatabaseId: (id: string | null) => void
   setNotionAnalysisDatabaseId: (id: string | null) => void
+  setNotionIdeaDatabaseId: (id: string | null) => void
   setChatModel: (model: string | null | undefined) => void
   setIsLoading: (loading: boolean) => void
 }
@@ -32,6 +34,7 @@ export const createSettingsSlice: StateCreator<
   notionApiKey: null,
   notionPlanningDatabaseId: null,
   notionAnalysisDatabaseId: null,
+  notionIdeaDatabaseId: null,
   chatModel: DEFAULT_CHAT_MODEL,
   isLoading: false,
 
@@ -46,6 +49,9 @@ export const createSettingsSlice: StateCreator<
 
   // Notion Database ID 설정 (분석 DB)
   setNotionAnalysisDatabaseId: (id) => set({ notionAnalysisDatabaseId: id }),
+
+  // Notion Database ID 설정 (딸깍 아이디어 DB)
+  setNotionIdeaDatabaseId: (id) => set({ notionIdeaDatabaseId: id }),
 
   // 채팅에 사용할 AI 모델 설정
   setChatModel: (model) => set({ chatModel: normalizeChatModel(model) }),

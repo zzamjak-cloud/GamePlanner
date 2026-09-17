@@ -18,6 +18,7 @@ export function useAppInitialization(options: UseAppInitializationOptions = {}) 
     setNotionApiKey,
     setNotionPlanningDatabaseId,
     setNotionAnalysisDatabaseId,
+    setNotionIdeaDatabaseId,
     setChatModel,
   } = useAppStore()
 
@@ -60,6 +61,11 @@ export function useAppInitialization(options: UseAppInitializationOptions = {}) 
         // Analysis DB ID 로드
         if (settings.notionAnalysisDatabaseId) {
           setNotionAnalysisDatabaseId(settings.notionAnalysisDatabaseId)
+        }
+
+        // 딸깍 아이디어 DB ID 로드
+        if (settings.notionIdeaDatabaseId) {
+          setNotionIdeaDatabaseId(settings.notionIdeaDatabaseId)
         }
 
         // 채팅 모델 로드 (없으면 슬라이스 기본값 유지)

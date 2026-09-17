@@ -4,6 +4,7 @@
 
 import { fetch } from '@tauri-apps/plugin-http'
 import { NotionBlock, NotionRichText, NotionBulletedListItemBlock, NotionTableBlock, NotionTableRowBlock } from '../types/notion'
+import { GameIdea } from '../types/idea'
 import { devLog } from './utils/logger'
 
 /**
@@ -634,10 +635,56 @@ export async function createNotionPage(
   // 페이지 타입에 따른 제목 접미사
   const titleSuffix = isAnalysisMode ? '게임 분석' : '게임 기획서'
 
+  return createPageInDatabase(`${title} : ${titleSuffix}`, blocks, notionToken, databaseId)
+}
+
+/**
+ * 딸깍으로 생성한 게임 아이디어를 Notion 데이터베이스 페이지로 저장
+ *
+ * @param idea 저장할 아이디어
+ * @param notionToken Notion API 토큰
+ * @param databaseId 아이디어용 데이터베이스 ID
+ * @returns 생성된 페이지 URL
+ */
+export async function createNotionIdeaPage(
+  idea: GameIdea,
+  notionToken: string,
+  databaseId: string
+): Promise<string> {
+  // 아이디어를 마크다운으로 조립한 뒤 기존 변환기를 재사용한다
+  const markdown = [
+    `# ${idea.title}`,
+    '',
+    ...idea.lines.map((line, index) => `${index + 1}. ${line}`),
+    '',
+    `**건드리는 심리**: ${idea.hook}`,
+    '',
+    `**영감 소재**: ${idea.inspiration}`,
+  ].join('\n')
+
+  const blocks = markdownToNotionBlocks(markdown, idea.title)
+  return createPageInDatabase(`${idea.title} : 게임 아이디어`, blocks, notionToken, databaseId)
+}
+
+/**
+ * 블록 배열로 데이터베이스 페이지를 생성한다 (100개 초과 블록은 순차 추가)
+ *
+ * @param pageTitle 페이지 제목 ("이름" 속성)
+ * @param blocks 본문 블록
+ * @param notionToken Notion API 토큰
+ * @param databaseId 대상 데이터베이스 ID (하이픈 유무 무관)
+ * @returns 생성된 페이지 URL
+ */
+async function createPageInDatabase(
+  pageTitle: string,
+  blocks: NotionBlock[],
+  notionToken: string,
+  databaseId: string
+): Promise<string> {
   // Database ID를 UUID 형식으로 변환
   const formattedDbId = formatDatabaseId(databaseId)
 
-  devLog.log('📝 노션 페이지 생성:', { title: `${title} : ${titleSuffix}`, blocks: blocks.length })
+  devLog.log('📝 노션 페이지 생성:', { title: pageTitle, blocks: blocks.length })
 
   // 첫 100개 블록으로 페이지 생성
   const initialBlocks = blocks.slice(0, 100)
@@ -656,7 +703,7 @@ export async function createNotionPage(
         title: [
           {
             text: {
-              content: `${title} : ${titleSuffix}`,
+              content: pageTitle,
             },
           },
         ],
